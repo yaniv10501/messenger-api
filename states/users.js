@@ -126,12 +126,23 @@ User.find()
               chatPromises.push(
                 getMessagesStream(`../messages/${userId}/${_id}.json`).then((messages) => {
                   console.log(`Got messages for user - ${userId}, chat - ${_id}`);
-                  userMessages.set(chatId, {
-                    _id,
-                    friends: chatFriendsExList,
-                    messages,
-                    loadedCount: 49,
-                  });
+                  if (messages.length <= 49) {
+                    userMessages.set(chatId, {
+                      _id,
+                      friends: chatFriendsExList,
+                      messages,
+                      loadedCount: 49,
+                      loadedAll: true,
+                    });
+                  }
+                  if (messages.length > 49) {
+                    userMessages.set(chatId, {
+                      _id,
+                      friends: chatFriendsExList,
+                      messages,
+                      loadedCount: 49,
+                    });
+                  }
                   const lastChatMessage = messages[0];
                   const { messageTime, messageDay, messageDate, dateNow } = lastChatMessage;
                   const lastMessageTime = setItemTime(
@@ -202,6 +213,7 @@ User.find()
                 friends: chatFriendsExList,
                 messages: [],
                 loadedCount: 49,
+                loadedAll: true,
               });
               if (isGroup) {
                 chatPromises.push(

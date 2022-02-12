@@ -22,6 +22,7 @@ const {
   getGroupId,
   getUserComposeList,
   getUserNewChat,
+  getMoreUserGroupFriends,
 } = require('../lib/chats');
 const {
   addUserFriendRequest,
@@ -391,6 +392,18 @@ module.exports.getPendingFriendRequests = (req, res, next) => {
     const { _id } = req.user;
     const pendingFriendRequestsList = getUserPendingFriendRequests(_id);
     res.json(pendingFriendRequestsList);
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.getMoreGroupFriends = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { groupId } = req.params;
+    const moreGroupFriends = getMoreUserGroupFriends(_id, groupId);
+    console.log(moreGroupFriends);
+    res.json(moreGroupFriends);
   } catch (error) {
     checkErrors(error, next);
   }

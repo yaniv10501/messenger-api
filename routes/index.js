@@ -21,6 +21,7 @@ const {
   getGroupFriendsList,
   setGroupImage,
   getNewChat,
+  getMoreGroupFriends,
 } = require('../controllers/users');
 const { login, logout } = require('../controllers/auth');
 const auth = require('../middlewares/auth');
@@ -69,6 +70,8 @@ router.get('/api/:chatId/messages/more', getMoreMessages);
 router.patch('/api/:chatId/image', setGroupImage);
 
 router.post('/api/group/new', initNewGroup);
+
+router.get('/api/:groupId/friends/more', getMoreGroupFriends);
 
 router.post('/api/:chatId/leave', leaveChat);
 

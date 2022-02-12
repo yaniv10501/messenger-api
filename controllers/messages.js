@@ -13,7 +13,7 @@ module.exports.sendMessage = async (req, res, next) => {
     const { _id } = req.user;
     const { chatId } = req.params;
     const { messageId } = uuidv4();
-    const { message, isMute: isChatdMute, friends } = req.body;
+    const { message, isMute: isChatdMute, friends, isGroup } = req.body;
     const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate } = getTime();
     const newMessage = {
       _id: messageId,
@@ -24,7 +24,7 @@ module.exports.sendMessage = async (req, res, next) => {
       unreed: false,
       messageByUser: true,
     };
-    await sendNewMessage(_id, chatId, newMessage, isChatdMute, friends);
+    await sendNewMessage(_id, chatId, newMessage, isChatdMute, friends, isGroup);
     return res.status(201).json({ message: 'Message sent successfully!', data: newMessage });
   } catch (error) {
     return checkErrors(error, next);
@@ -37,14 +37,24 @@ module.exports.getMessages = async (req, res, next) => {
     const { chatId } = req.params;
     try {
       const messages = getUserChatMessages(_id, chatId);
-      res.json({
-        _id: chatId,
-        messages,
-      });
+      const { loadedAll } = messages;
+      if (loadedAll) {
+        res.json({
+          _id: chatId,
+          ...messages,
+        });
+      }
+      if (!loadedAll) {
+        res.json({
+          _id: chatId,
+          messages,
+        });
+      }
     } catch (error) {
       res.json({
         _id: chatId,
         messages: [],
+        loadedAll: true,
       });
     }
   } catch (error) {
