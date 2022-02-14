@@ -96,7 +96,7 @@ module.exports.setUserImage = (req, res, next) => {
     });
     profilePic.mv(`${profilePicDirName}profile-pic.${profilePic.mimetype.replace('image/', '')}`);
     setUserNewImage(_id);
-    res.json({ message: 'Profile image uploaded' });
+    res.json({ image: 'Uploaded' });
     User.findOneAndUpdate(
       { _id },
       { image: 'Uploaded' },
@@ -139,9 +139,8 @@ module.exports.getFriendImage = (req, res, next) => {
   try {
     const { _id } = req.user;
     const { friendId: _fId } = req.params;
-    const { listType, index: listIndex } = req.query;
-    const friendId = getFriendId(_id, _fId, { listType, index: listIndex });
-    console.log(friendId);
+    const { listType, index: listIndex, chatId } = req.query;
+    const friendId = getFriendId(_id, _fId, { listType, index: listIndex, chatId });
     const { friendId: fId } = friendId;
     const imageTypes = ['.png', '.jpeg'];
     imageTypes.some((imageType, index) => {
@@ -167,8 +166,8 @@ module.exports.getFriendImage = (req, res, next) => {
 module.exports.getUserMe = (req, res, next) => {
   try {
     const { _id } = req.user;
-    const { firstName, lastName, email } = getUser(_id);
-    res.json({ name: `${firstName} ${lastName}`, email });
+    const { firstName, lastName, email, image } = getUser(_id);
+    res.json({ name: `${firstName} ${lastName}`, email, image });
   } catch (error) {
     checkErrors(error, next);
   }
@@ -280,12 +279,12 @@ module.exports.getComposeList = (req, res, next) => {
   }
 };
 
-module.exports.addFriend = (req, res, next) => {
+module.exports.addFriend = async (req, res, next) => {
   try {
     const { _id } = req.user;
     const { friendId, index } = req.params;
-    addUserFriendRequest(_id, friendId, index);
-    res.json({ message: 'friend request sent' });
+    const newFriendRequest = await addUserFriendRequest(_id, friendId, index);
+    res.json(newFriendRequest);
   } catch (error) {
     checkErrors(error, next);
   }
@@ -297,6 +296,7 @@ module.exports.acceptFriendRequest = (req, res, next) => {
     const { requestId } = req.params;
     const { index } = req.query;
     setResponseFriendRequest(_id, requestId, index);
+    res.json({ message: 'Friend request accepted' });
   } catch (error) {
     checkErrors(error, next);
   }

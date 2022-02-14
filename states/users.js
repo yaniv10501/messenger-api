@@ -90,6 +90,7 @@ User.find()
             isEmpty,
           } = chat;
           if (isEmpty) {
+            console.log(chat);
             user.emptyGroup = chat;
           }
           if (!isEmpty) {
@@ -264,7 +265,36 @@ User.find()
       }
       if (!user.emptyGroup) {
         const emptyGroup = chats.find(({ isEmpty }) => isEmpty);
-        user.emptyGroup = emptyGroup;
+        if (!emptyGroup) {
+          const emptyGroupId = uuidv4();
+          usersPromises.push(
+            User.findOneAndUpdate(
+              { _id: mongoUserId },
+              {
+                $addToSet: {
+                  chats: {
+                    chatId: emptyGroupId,
+                    isGroup: true,
+                    isEmpty: true,
+                  },
+                },
+              },
+              {
+                new: true,
+              }
+            )
+              .select(['chats'])
+              .then((emptyGroupResult) => {
+                const newEmptyGroup = emptyGroupResult.chats.find(({ isEmpty }) => isEmpty);
+                user.emptyGroup = newEmptyGroup;
+                console.log(newEmptyGroup);
+              })
+          );
+        }
+        if (emptyGroup) {
+          console.log(emptyGroup);
+          user.emptyGroup = emptyGroup;
+        }
       }
       usersPromises.push(
         Promise.all(chatPromises).then((chatsList) => {
