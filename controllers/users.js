@@ -402,7 +402,6 @@ module.exports.getMoreGroupFriends = (req, res, next) => {
     const { _id } = req.user;
     const { groupId } = req.params;
     const moreGroupFriends = getMoreUserGroupFriends(_id, groupId);
-    console.log(moreGroupFriends);
     res.json(moreGroupFriends);
   } catch (error) {
     checkErrors(error, next);

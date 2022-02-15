@@ -90,7 +90,6 @@ User.find()
             isEmpty,
           } = chat;
           if (isEmpty) {
-            console.log(chat);
             user.emptyGroup = chat;
           }
           if (!isEmpty) {
@@ -287,12 +286,10 @@ User.find()
               .then((emptyGroupResult) => {
                 const newEmptyGroup = emptyGroupResult.chats.find(({ isEmpty }) => isEmpty);
                 user.emptyGroup = newEmptyGroup;
-                console.log(newEmptyGroup);
               })
           );
         }
         if (emptyGroup) {
-          console.log(emptyGroup);
           user.emptyGroup = emptyGroup;
         }
       }
