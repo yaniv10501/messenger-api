@@ -1,3 +1,5 @@
+const SingleNode = require('./SingleNode');
+
 class LinkedList {
   constructor() {
     this.head = null;
@@ -42,7 +44,7 @@ class LinkedList {
   }
 
   push(value) {
-    const node = new Node(value);
+    const node = new SingleNode(value);
     if (!this.head) {
       this.head = node;
     } else {
@@ -53,7 +55,7 @@ class LinkedList {
   }
 
   unshift(value) {
-    const node = new Node(value);
+    const node = new SingleNode(value);
     if (!this.tail) {
       this.tail = node;
     } else {
