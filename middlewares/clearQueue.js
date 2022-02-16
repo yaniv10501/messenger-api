@@ -1,4 +1,3 @@
-const isFunction = require('lodash/isFunction');
 const users = require('../states/users');
 const checkErrors = require('../utils/checkErrors');
 
@@ -11,9 +10,7 @@ const clearQueue = (req, res, next) => {
     }
     if (currentUser.queue.length > 0) {
       currentUser.queue.forEach((action) => {
-        if (isFunction(action)) {
-          action();
-        }
+        action();
       });
       currentUser.queue = [];
     }
