@@ -68,6 +68,7 @@ User.find()
           });
         }
       }
+      user.queue = [];
       user.friends = friendList;
       const userMessages = new Map();
       const exChatsList = [];

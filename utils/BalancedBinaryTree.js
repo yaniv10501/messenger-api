@@ -1,35 +1,24 @@
 const DoubledBlanacedNode = require('./DoubledBlanacedNode');
 
 class BalancedBinaryTree {
-  add(value) {
-    const newNode = new DoubledBlanacedNode(value);
-    const node = newNode;
-    if (this.root === null) {
-      this.root = node;
-    } else {
-      let currentNode = this.root;
-      let searching = true;
-      while (searching) {
-        if (currentNode.value > value) {
-          if (!currentNode.left) {
-            currentNode.left = newNode;
-            searching = false;
-          }
-          currentNode = currentNode.left;
-        } else {
-          if (!currentNode.right) {
-            currentNode.right = newNode;
-            searching = false;
-          }
-          currentNode = currentNode.right;
-        }
-      }
-    }
-    return { node: newNode, tree: this };
+  constructor() {
+    this.root = null;
   }
 
-  balance() {
-    let currentNode = this.root;
+  add(value) {
+    if (!this.root) {
+      this.root = new DoubledBlanacedNode(value);
+    } else {
+      this.root.add(value);
+    }
+  }
+
+  toJSON() {
+    return JSON.stringify(this.root.serialize(), null, 4);
+  }
+
+  toObject() {
+    return this.root.serialize();
   }
 }
 
