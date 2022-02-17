@@ -60,11 +60,6 @@ User.find()
           friendList.push({
             _id: friends[i]._id.toString(),
             friendId,
-            firstName: friends[i].firstName,
-            lastName: friends[i].lastName,
-            gender: friends[i].gender,
-            birthday: friends[i].birthday,
-            image: friends[i].image,
           });
         }
       }
@@ -95,31 +90,15 @@ User.find()
           }
           if (!isEmpty) {
             const chatFriendslist = chatFriends.map((chatFriend) => {
-              const {
-                _id: mongoFriendId,
-                firstName: friendFirstName,
-                lastName: friendLastName,
-                birthday: friendBirthday,
-                gender: friendGender,
-                image: friendImage,
-              } = chatFriend;
+              const { _id: mongoFriendId } = chatFriend;
               const friendId = uuidv4();
               chatFriendsExList.push({
                 _id: mongoFriendId.toString(),
                 friendId,
-                firstName: friendFirstName,
-                lastName: friendLastName,
-                birthday: friendBirthday,
-                gender: friendGender,
-                image: friendImage,
               });
               return {
-                _id: friendId,
-                firstName: friendFirstName,
-                lastName: friendLastName,
-                birthday: friendBirthday,
-                gender: friendGender,
-                image: friendImage,
+                _id: mongoFriendId.toString(),
+                friendId,
               };
             });
             const filePathExists = checkFilePathExists(`../messages/${userId}/${_id}.json`);
@@ -311,11 +290,6 @@ User.find()
             return {
               requestId,
               _id,
-              firstName: friend.firstName,
-              lastName: friend.lastName,
-              gender: friend.gender,
-              birthday: friend.birthday,
-              image: friend.image,
               requestTime: requestTimeFormat,
             };
           });
@@ -329,11 +303,6 @@ User.find()
             return {
               requestId,
               _id,
-              firstName: friend.firstName,
-              lastName: friend.lastName,
-              gender: friend.gender,
-              birthday: friend.birthday,
-              image: friend.image,
               requestTime: requestTimeFormat,
             };
           });
@@ -349,11 +318,6 @@ User.find()
                   return {
                     otherUserId,
                     _id: otherUser._id.toString(),
-                    firstName: otherUser.firstName,
-                    lastName: otherUser.lastName,
-                    gender: otherUser.gender,
-                    birthday: otherUser.birthday,
-                    image: otherUser.image,
                   };
                 });
                 user.moreFriends = moreFriendsList;

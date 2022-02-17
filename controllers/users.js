@@ -83,7 +83,7 @@ module.exports.setUserImage = (req, res, next) => {
     if (!fs.existsSync(profilePicDirName)) {
       fs.mkdirSync(profilePicDirName);
     }
-    const imageTypes = ['png', 'jpeg'];
+    const imageTypes = ['png', 'jpeg', 'jpg'];
     const isValidType = imageTypes.some((imageType) => profilePic.mimetype.includes(imageType));
     if (!isValidType) {
       throw new NotAllowedError('Image type is not allowed');
@@ -117,7 +117,7 @@ module.exports.setUserImage = (req, res, next) => {
 module.exports.getUserImage = (req, res, next) => {
   try {
     const { _id } = req.user;
-    const imageTypes = ['png', 'jpeg'];
+    const imageTypes = ['png', 'jpeg', 'jpg'];
     imageTypes.some((imageType, index) => {
       const imagePath = path.join(__dirname, `../usersImages/${_id}/profile-pic.${imageType}`);
       if (fs.existsSync(imagePath)) {

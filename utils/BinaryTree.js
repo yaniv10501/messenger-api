@@ -29,7 +29,7 @@ class BinaryTree {
         }
       }
     }
-    return { newNode, tree: this };
+    return { node: newNode, tree: this };
   }
 
   toObject() {
