@@ -10,7 +10,7 @@ module.exports = async (req, res, next) => {
   try {
     const { authorization, refreshToken: refreshJwt, wsAuth: wsJwt } = req.cookies;
 
-    // If no token or refreshToken throw an error
+    // If no token and no refreshToken throw an error
     if ((!authorization || !authorization.startsWith('Bearer ')) && !refreshJwt) {
       throw new AuthorizationError('Authorization is required');
     }
@@ -75,9 +75,15 @@ module.exports = async (req, res, next) => {
               const bulkUpdate = [
                 {
                   updateOne: {
-                    filter: { userId },
+                    filter: {
+                      userId,
+                    },
                     update: {
-                      $pull: { wsAuthTokens: { token: oldWsToken } },
+                      $pull: {
+                        wsAuthTokens: {
+                          token: oldWsToken,
+                        },
+                      },
                     },
                   },
                 },
@@ -85,9 +91,23 @@ module.exports = async (req, res, next) => {
                   updateOne: {
                     filter: { userId },
                     update: {
+                      $pull: {
+                        refreshTokens: {
+                          token: refreshToken,
+                        },
+                      },
+                    },
+                  },
+                },
+                {
+                  updateOne: {
+                    filter: {
+                      userId,
+                    },
+                    update: {
                       $addToSet: {
                         wsAuthTokens: {
-                          token: newWsJwt,
+                          token: newWsToken,
                           expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
                         },
                         usedWsTokens: oldWsToken,
@@ -102,7 +122,9 @@ module.exports = async (req, res, next) => {
                 },
                 {
                   updateOne: {
-                    filter: { userId },
+                    filter: {
+                      userId,
+                    },
                     update: {
                       $push: {
                         usedTokens: {

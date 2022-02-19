@@ -29,11 +29,11 @@ module.exports.writeJsonFile = (filePath, info, options) => {
 module.exports.checkFilePathExists = (filePath) => fs.existsSync(path.join(__dirname, filePath));
 
 module.exports.getMessagesStream = async (filePath, options) => {
-  const { toLoad = 49 } = options || {};
-  const messages = [];
-  const stream = createJsonReadStream(filePath);
-  const parser = JSONStream.parse('*');
   const streamPromise = new Promise((resolve, reject) => {
+    const { toLoad = 49 } = options || {};
+    const messages = [];
+    const stream = createJsonReadStream(filePath);
+    const parser = JSONStream.parse('*');
     stream.pipe(parser);
     const start = toLoad - 49;
     let i = 0;
@@ -42,17 +42,25 @@ module.exports.getMessagesStream = async (filePath, options) => {
         messages.push(obj);
         i += 1;
         if (i > toLoad) {
-          stream.close();
           parser.end();
-          resolve(messages);
         }
       }
       if (i < start) i += 1;
     });
 
     parser.on('end', () => {
+      if (i <= toLoad) {
+        resolve({
+          messages,
+          loadedAll: true,
+        });
+      } else {
+        resolve({
+          messages,
+          loadedAll: false,
+        });
+      }
       stream.close();
-      resolve(messages);
     });
     parser.on('error', (error) => {
       const err = new Error(error);

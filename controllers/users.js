@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
 const User = require('../models/user');
 const NotFoundError = require('../utils/errors/NotFoundError');
 const NotAllowedError = require('../utils/errors/NotAllowedError');
@@ -9,7 +10,6 @@ const {
   setNewUser,
   setUserNewImage,
   getFriendId,
-  getUser,
   getUserMoreFriendsList,
   getUserFriendsList,
   getUserGroupFriendsList,
@@ -30,6 +30,9 @@ const {
   getUserFriendRequests,
   getUserPendingFriendRequests,
 } = require('../lib/friendRequests');
+const users = require('../states/users');
+const sortUsersArray = require('../utils/sortUsersArray');
+const { checkFilePathExists } = require('../utils/fs');
 
 module.exports.createUser = (req, res, next) => {
   try {
@@ -55,6 +58,30 @@ module.exports.createUser = (req, res, next) => {
               email,
               image: '',
             });
+            const newUserState = users.get(_id);
+            newUserState.exChatsList = [];
+            newUserState.chats = [];
+            newUserState.messages = new Map();
+            newUserState.loadedChats = 0;
+            newUserState.chatsCount = 0;
+            newUserState.friendRequests = [];
+            newUserState.pendingFriendRequests = [];
+            newUserState.queue = [];
+            User.find({ _id: { $nin: [_id] } })
+              .then((othersResult) => {
+                const sortedOthersList = sortUsersArray(othersResult);
+                const moreFriendsList = sortedOthersList.map((otherUser) => {
+                  const otherUserId = uuidv4();
+                  return {
+                    otherUserId,
+                    _id: otherUser._id.toString(),
+                  };
+                });
+                newUserState.moreFriends = moreFriendsList;
+              })
+              .catch((error) => {
+                console.log(error);
+              });
             res.status(201).json({
               message: 'A new user has been created',
               user: {
@@ -141,12 +168,12 @@ module.exports.getFriendImage = (req, res, next) => {
     const { friendId: _fId } = req.params;
     const { listType, index: listIndex, chatId } = req.query;
     const friendId = getFriendId(_id, _fId, { listType, index: listIndex, chatId });
-    const { friendId: fId } = friendId;
-    const imageTypes = ['.png', '.jpeg'];
+    const { friendId: fId } = friendId || { friendId };
+    const imageTypes = ['png', 'jpeg', 'jpg'];
     imageTypes.some((imageType, index) => {
       const imagePath = path.join(
         __dirname,
-        `../usersImages/${fId || friendId}/profile-pic${imageType}`
+        `../usersImages/${fId || friendId}/profile-pic.${imageType}`
       );
       if (fs.existsSync(imagePath)) {
         res.sendFile(imagePath);
@@ -166,7 +193,25 @@ module.exports.getFriendImage = (req, res, next) => {
 module.exports.getUserMe = (req, res, next) => {
   try {
     const { _id } = req.user;
-    const { firstName, lastName, email, image } = getUser(_id);
+    const currentUser = users.get(_id);
+    const { firstName, lastName, email, image, messages } = currentUser;
+    User.findOne({ _id })
+      .select(['chats'])
+      .then(({ chats }) => {
+        let chatLimit = 20;
+        for (let i = 0; i < chats.length; i += 1) {
+          const currentChat = chats[i];
+          const chatId = currentChat._id.toString();
+          const filePathExists = checkFilePathExists(`../messages/${_id}/${chatId}.json`);
+          if (!filePathExists) {
+            chatLimit += 1;
+          }
+          if (i > chatLimit) {
+            messages.delete(currentChat.chatId);
+          }
+        }
+        currentUser.loadedChats = chatLimit;
+      });
     res.json({ name: `${firstName} ${lastName}`, email, image });
   } catch (error) {
     checkErrors(error, next);
@@ -262,8 +307,31 @@ module.exports.getMoreChats = (req, res, next) => {
 module.exports.getMoreFriends = (req, res, next) => {
   try {
     const { _id } = req.user;
-    const moreFriendsList = getUserMoreFriendsList(_id);
+    const { start = 0 } = req.query;
+    const moreFriendsList = getUserMoreFriendsList(_id, { start });
     res.json(moreFriendsList);
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.getFriendRequests = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { start = 0 } = req.query;
+    const friendRequestsList = getUserFriendRequests(_id, { start });
+    res.json(friendRequestsList);
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.getPendingFriendRequests = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { start = 0 } = req.query;
+    const pendingFriendRequestsList = getUserPendingFriendRequests(_id, { start });
+    res.json(pendingFriendRequestsList);
   } catch (error) {
     checkErrors(error, next);
   }
@@ -371,27 +439,6 @@ module.exports.getGroupFriendsList = (req, res, next) => {
     const { _id } = req.user;
     const { groupId, friendsList } = getUserGroupFriendsList(_id);
     res.json({ groupId, friendsList });
-  } catch (error) {
-    checkErrors(error, next);
-  }
-};
-
-module.exports.getFriendRequests = (req, res, next) => {
-  try {
-    const { _id } = req.user;
-
-    const friendRequestsList = getUserFriendRequests(_id);
-    res.json(friendRequestsList);
-  } catch (error) {
-    checkErrors(error, next);
-  }
-};
-
-module.exports.getPendingFriendRequests = (req, res, next) => {
-  try {
-    const { _id } = req.user;
-    const pendingFriendRequestsList = getUserPendingFriendRequests(_id);
-    res.json(pendingFriendRequestsList);
   } catch (error) {
     checkErrors(error, next);
   }

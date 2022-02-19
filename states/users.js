@@ -104,42 +104,59 @@ User.find()
             const filePathExists = checkFilePathExists(`../messages/${userId}/${_id}.json`);
             if (filePathExists) {
               chatPromises.push(
-                getMessagesStream(`../messages/${userId}/${_id}.json`).then((messages) => {
-                  console.log(`Got messages for user - ${userId}, chat - ${_id}`);
-                  if (messages.length <= 49) {
+                getMessagesStream(`../messages/${userId}/${_id}.json`).then(
+                  ({ messages, loadedAll }) => {
+                    console.log(`Got messages for user - ${userId}, chat - ${_id}`);
                     userMessages.set(chatId, {
                       _id,
                       friends: chatFriendsExList,
                       messages,
                       loadedCount: 49,
-                      loadedAll: true,
+                      loadedAll,
                     });
-                  }
-                  if (messages.length > 49) {
-                    userMessages.set(chatId, {
-                      _id,
-                      friends: chatFriendsExList,
-                      messages,
-                      loadedCount: 49,
-                    });
-                  }
-                  const lastChatMessage = messages[0];
-                  const { messageTime, messageDay, messageDate, dateNow } = lastChatMessage;
-                  const lastMessageTime = setItemTime(
-                    messageDate,
-                    dateNow,
-                    messageDay,
-                    messageTime
-                  );
-                  if (isGroup) {
+                    const lastChatMessage = messages[0];
+                    const { messageTime, messageDay, messageDate, dateNow } = lastChatMessage;
+                    const lastMessageTime = setItemTime(
+                      messageDate,
+                      dateNow,
+                      messageDay,
+                      messageTime
+                    );
+                    if (isGroup) {
+                      exChatsList.push({
+                        _id,
+                        chatId,
+                        isGroup,
+                        groupAdmin,
+                        friends: chatFriendsExList,
+                        chatName: groupName,
+                        chatImage: groupImage,
+                        isMute,
+                        lastMessage: lastChatMessage.messageContent,
+                        lastMessageTime,
+                        unreadCount,
+                      });
+                      return {
+                        _id,
+                        chatId,
+                        isGroup,
+                        groupAdmin,
+                        friends: chatFriendslist,
+                        chatName: groupName,
+                        chatImage: groupImage,
+                        isMute,
+                        lastMessage: lastChatMessage.messageContent,
+                        lastMessageTime,
+                        unreadCount,
+                      };
+                    }
                     exChatsList.push({
                       _id,
                       chatId,
-                      isGroup,
-                      groupAdmin,
                       friends: chatFriendsExList,
-                      chatName: groupName,
-                      chatImage: groupImage,
+                      isGroup,
+                      chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
+                      chatImage: chatFriends[0].image,
                       isMute,
                       lastMessage: lastChatMessage.messageContent,
                       lastMessageTime,
@@ -148,46 +165,20 @@ User.find()
                     return {
                       _id,
                       chatId,
-                      isGroup,
-                      groupAdmin,
                       friends: chatFriendslist,
-                      chatName: groupName,
-                      chatImage: groupImage,
+                      isGroup,
+                      chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
+                      chatImage: chatFriends[0].image,
                       isMute,
                       lastMessage: lastChatMessage.messageContent,
                       lastMessageTime,
                       unreadCount,
                     };
                   }
-                  exChatsList.push({
-                    _id,
-                    chatId,
-                    friends: chatFriendsExList,
-                    isGroup,
-                    chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
-                    chatImage: chatFriends[0].image,
-                    isMute,
-                    lastMessage: lastChatMessage.messageContent,
-                    lastMessageTime,
-                    unreadCount,
-                  });
-                  return {
-                    _id,
-                    chatId,
-                    friends: chatFriendslist,
-                    isGroup,
-                    chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
-                    chatImage: chatFriends[0].image,
-                    isMute,
-                    lastMessage: lastChatMessage.messageContent,
-                    lastMessageTime,
-                    unreadCount,
-                  };
-                })
+                )
               );
             }
             if (!filePathExists) {
-              chatLimit += 1;
               userMessages.set(chatId, {
                 _id,
                 friends: chatFriendsExList,
@@ -195,6 +186,9 @@ User.find()
                 loadedCount: 49,
                 loadedAll: true,
               });
+              if (!isGroup) {
+                chatLimit += 1;
+              }
               if (isGroup) {
                 chatPromises.push(
                   new Promise((resolve) => {

@@ -36,16 +36,16 @@ module.exports.login = (req, res, next) => {
                 expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
               },
             ],
-            wsAuth: [
+            wsAuthTokens: [
               {
                 token: wsToken,
-                expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+                expires: Date.now() + 1000 * 10,
               },
             ],
           })
             .then(() => {
               res.cookie('authorization', `Bearer ${token}`, {
-                maxAge: 1000 * 30,
+                maxAge: 1000 * 60 * 60 * 24 * 7,
                 httpOnly: false,
                 secure: false,
                 // domain: 'ymwebapp.com',
@@ -82,9 +82,9 @@ module.exports.login = (req, res, next) => {
                       token: refreshToken,
                       expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
                     },
-                    wsAuth: {
+                    wsAuthTokens: {
                       token: wsToken,
-                      expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+                      expires: Date.now() + 1000 * 10,
                     },
                   },
                 }
@@ -101,7 +101,7 @@ module.exports.login = (req, res, next) => {
                     }
                   });
                   res.cookie('authorization', `Bearer ${token}`, {
-                    maxAge: 1000 * 30,
+                    maxAge: 1000 * 10,
                     httpOnly: false,
                     secure: false,
                     // domain: 'ymwebapp.com',

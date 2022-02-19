@@ -25,7 +25,13 @@ const {
 } = require('../controllers/users');
 const { login, logout } = require('../controllers/auth');
 const auth = require('../middlewares/auth');
-const { sendMessage, getMessages, getMoreMessages, leaveChat } = require('../controllers/messages');
+const {
+  sendMessage,
+  getMessages,
+  getMoreMessages,
+  leaveChat,
+  leaveChats,
+} = require('../controllers/messages');
 
 router.post('/api/signup', validateUserSchema, createUser);
 
@@ -39,11 +45,11 @@ router.get('/api/new/:chatId', getNewChat);
 
 router.get('/api/users/me/image', getUserImage);
 
-router.get('/api/:friendId/image', getFriendImage);
+router.get('/api/image/:friendId', getFriendImage);
 
 router.patch('/api/users/me/image', setUserImage);
 
-router.post('/api/:friendId/mute', setChatMute);
+router.post('/api/mute/:friendId', setChatMute);
 
 router.get('/api/chats', getChats);
 
@@ -61,25 +67,27 @@ router.get('/api/friends/pending', getPendingFriendRequests);
 
 router.post('/api/friends/:friendId/:index', addFriend);
 
-router.post('/api/:requestId/accept', acceptFriendRequest);
+router.post('/api/accept/:requestId', acceptFriendRequest);
 
-router.get('/api/:chatId/messages', getMessages);
+router.get('/api/messages/:chatId', getMessages);
 
-router.get('/api/:chatId/messages/more', getMoreMessages);
+router.get('/api/messages/more/:chatId', getMoreMessages);
 
-router.patch('/api/:chatId/image', setGroupImage);
+router.patch('/api/image/:chatId', setGroupImage);
 
 router.post('/api/group/new', initNewGroup);
 
-router.get('/api/:groupId/friends/more', getMoreGroupFriends);
+router.get('/api/friends/more/:groupId', getMoreGroupFriends);
 
-router.post('/api/:chatId/leave', leaveChat);
+router.post('/api/leave/:chatId', leaveChat);
+
+router.post('/api/chats/leave', leaveChats);
 
 router.get('/api/friends/more', getMoreFriends);
 
-router.post('/api/:chatId/type', setUserTyping);
+router.post('/api/type/:chatId', setUserTyping);
 
-router.post('/api/:chatId/message', sendMessage);
+router.post('/api/message/:chatId', sendMessage);
 
 router.post('/api/signout', logout);
 
