@@ -8,6 +8,7 @@ const { MONGO_DB_SERVER = 'mongodb://localhost:27017' } = process.env;
 
 mongoose.connect(`${MONGO_DB_SERVER}/messenger`);
 
+const usersIds = [];
 const usersArray = [];
 const userMessages = [];
 const friendMessages = [];
@@ -57,6 +58,7 @@ User.deleteMany()
         const friendPromises = [];
         await result.forEach((user, userIndex) => {
           const user0Id = user._id.toString();
+          usersIds.push(user0Id);
           const emptyGroupId = uuidv4();
           friendPromises.push(
             User.findOneAndUpdate(
@@ -311,7 +313,10 @@ User.deleteMany()
                 );
               });
               await Promise.all(messagesPromises).then(async () => {
-                await Promise.all(bulkPromises).then(() => console.log('Done!'));
+                await Promise.all(bulkPromises).then(() => {
+                  writeJsonFile('../utils/usersIds.json', usersIds, 'sync');
+                  console.log('Done!');
+                });
               });
             })
             .catch((error) => console.log(error));

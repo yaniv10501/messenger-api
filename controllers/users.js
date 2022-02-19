@@ -37,6 +37,7 @@ const { checkFilePathExists } = require('../utils/fs');
 module.exports.createUser = (req, res, next) => {
   try {
     const { firstName, lastName, gender, birthday, email, password } = req.body;
+    const emptyGroupId = uuidv4();
     bcrypt
       .hash(password, 10)
       .then((hash) =>
@@ -47,6 +48,13 @@ module.exports.createUser = (req, res, next) => {
           birthday,
           email,
           password: hash,
+          chats: [
+            {
+              chatId: emptyGroupId,
+              isGroup: true,
+              isEmpty: true,
+            },
+          ],
         })
           .then((newUser) => {
             const _id = newUser._id.toString();
@@ -58,7 +66,9 @@ module.exports.createUser = (req, res, next) => {
               email,
               image: '',
             });
+            const newEmptyGroup = newUser.chats[0];
             const newUserState = users.get(_id);
+            newUserState.emptyGroup = newEmptyGroup;
             newUserState.exChatsList = [];
             newUserState.chats = [];
             newUserState.messages = new Map();
