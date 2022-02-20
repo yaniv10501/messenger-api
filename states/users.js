@@ -302,26 +302,6 @@ User.find()
           });
           console.log(`Got all user friend list user - ${index}`);
           user.pendingFriendRequests = pendingFriendRequestsList;
-          const friendsIds = friends.map((friend) => friend._id);
-          moreListPromises.push(
-            User.find({ _id: { $nin: [userId, ...friendsIds, ...friendRequestsIds] } })
-              .then((othersResult) => {
-                const moreFriendsList = [];
-                for (let i = 0; i < 20; i += 1) {
-                  const currentOther = othersResult[i];
-                  const otherUserId = uuidv4();
-                  moreFriendsList.push({
-                    otherUserId,
-                    _id: currentOther._id.toString(),
-                  });
-                }
-                user.moreFriends = moreFriendsList;
-                users.set({ _id: userId, ...user });
-              })
-              .catch((error) => {
-                console.log(error);
-              })
-          );
           users.set({ _id: userId, ...user });
         })
       );

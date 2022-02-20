@@ -13,7 +13,7 @@ const usersArray = [];
 const userMessages = [];
 const friendMessages = [];
 
-for (let i = 0; i < 1000; i += 1) {
+for (let i = 0; i < 5000; i += 1) {
   usersArray.push({
     firstName: `User${i}`,
     lastName: `User${i}`,

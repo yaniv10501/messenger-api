@@ -24,15 +24,35 @@ class AvlTree {
     if (!this.root) {
       return null;
     }
-    if (start instanceof Number) {
-      return this.root.getList(start);
+    const queue = [];
+    const list = [];
+    queue.push(this.root);
+    return this.breadthFirstTraverse(queue, list, start || 0);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  breadthFirstTraverse(queue, array, start) {
+    if (queue.length < 0) return array;
+
+    let i = 0;
+    while (queue.length > 0) {
+      if (start > i) {
+        const node = queue.shift();
+        if (node.left) queue.push(node.left);
+        if (node.right) queue.push(node.right);
+        i += 1;
+      } else {
+        const node = queue.shift();
+        array.push(node.value);
+        if (node.left) queue.push(node.left);
+        if (node.right) queue.push(node.right);
+        if (i >= start + 20) {
+          queue.splice(0);
+        }
+      }
     }
-    if (start instanceof Object && (start.left || start.right)) {
-      return start.getList(0);
-    }
-    throw new Error(
-      'Start is not defined properly, please specify either the start Number or start node'
-    );
+
+    return array;
   }
 
   toJSON() {
