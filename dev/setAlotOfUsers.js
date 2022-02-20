@@ -13,7 +13,7 @@ const usersArray = [];
 const userMessages = [];
 const friendMessages = [];
 
-for (let i = 0; i < 100; i += 1) {
+for (let i = 0; i < 1000; i += 1) {
   usersArray.push({
     firstName: `User${i}`,
     lastName: `User${i}`,
@@ -26,7 +26,7 @@ for (let i = 0; i < 100; i += 1) {
   const tempUserMessages = [];
   const tempFriendMessages = [];
   const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate } = getTime();
-  for (let userI = 0; userI < 200; userI += 1) {
+  for (let userI = 0; userI < 20; userI += 1) {
     const messageId = uuidv4();
     const newMessage = {
       _id: messageId,
@@ -76,7 +76,7 @@ User.deleteMany()
           );
           result.forEach((otherUser, otherIndex) => {
             const chatId = uuidv4();
-            if (userIndex < otherIndex) {
+            if (userIndex < otherIndex && userIndex + 5 > otherIndex) {
               const friendId = otherUser._id.toString();
               const bulkUpdate = [
                 {
@@ -149,168 +149,170 @@ User.deleteMany()
               const messagesPromises = [];
               const bulkPromises = [];
               users.forEach(({ _id, chats }, index) => {
-                chats.forEach(
-                  ({ _id: mongoChatId, chatId, friends, unreadCount, isEmpty }, chatIndex) => {
-                    if (!isEmpty) {
-                      const mChatId = mongoChatId.toString();
-                      const userId = _id.toString();
-                      const friendId = friends[0]._id.toString();
-                      messagesPromises.push(
-                        User.findOne({ _id: friendId })
-                          .select(['chats'])
-                          .then(async ({ chats: friendChats }) => {
-                            const currentFriendChat = friendChats.find(
-                              ({ chatId: friendChatId }) => friendChatId === chatId
-                            );
-                            const friendChatId = currentFriendChat._id.toString();
-                            const friendUnreadCount = currentFriendChat.unreadCount + 500;
-                            const bulkUpdate = [
-                              {
-                                updateOne: {
-                                  filter: { _id: userId },
-                                  update: {
-                                    $pull: {
-                                      chats: {
-                                        chatId,
+                if (index < 20) {
+                  chats.forEach(
+                    ({ _id: mongoChatId, chatId, friends, unreadCount, isEmpty }, chatIndex) => {
+                      if (!isEmpty) {
+                        const mChatId = mongoChatId.toString();
+                        const userId = _id.toString();
+                        const friendId = friends[0]._id.toString();
+                        messagesPromises.push(
+                          User.findOne({ _id: friendId })
+                            .select(['chats'])
+                            .then(async ({ chats: friendChats }) => {
+                              const currentFriendChat = friendChats.find(
+                                ({ chatId: friendChatId }) => friendChatId === chatId
+                              );
+                              const friendChatId = currentFriendChat._id.toString();
+                              const friendUnreadCount = currentFriendChat.unreadCount + 500;
+                              const bulkUpdate = [
+                                {
+                                  updateOne: {
+                                    filter: { _id: userId },
+                                    update: {
+                                      $pull: {
+                                        chats: {
+                                          chatId,
+                                        },
                                       },
                                     },
                                   },
                                 },
-                              },
-                              {
-                                updateOne: {
-                                  filter: { _id: userId },
-                                  update: {
-                                    $push: {
-                                      chats: {
-                                        $each: [
-                                          {
-                                            _id: mChatId,
-                                            chatId,
-                                            friends: {
-                                              _id: friendId,
+                                {
+                                  updateOne: {
+                                    filter: { _id: userId },
+                                    update: {
+                                      $push: {
+                                        chats: {
+                                          $each: [
+                                            {
+                                              _id: mChatId,
+                                              chatId,
+                                              friends: {
+                                                _id: friendId,
+                                              },
+                                              isGroup: false,
+                                              unreadCount,
                                             },
-                                            isGroup: false,
-                                            unreadCount,
-                                          },
-                                        ],
-                                        $position: 0,
+                                          ],
+                                          $position: 0,
+                                        },
                                       },
                                     },
                                   },
                                 },
-                              },
-                              {
-                                updateOne: {
-                                  filter: { _id: friendId },
-                                  update: {
-                                    $pull: {
-                                      chats: {
-                                        chatId,
+                                {
+                                  updateOne: {
+                                    filter: { _id: friendId },
+                                    update: {
+                                      $pull: {
+                                        chats: {
+                                          chatId,
+                                        },
                                       },
                                     },
                                   },
                                 },
-                              },
-                              {
-                                updateOne: {
-                                  filter: { _id: friendId },
-                                  update: {
-                                    $push: {
-                                      chats: {
-                                        $each: [
-                                          {
-                                            _id: friendChatId,
-                                            chatId,
-                                            friends: {
-                                              _id: userId,
+                                {
+                                  updateOne: {
+                                    filter: { _id: friendId },
+                                    update: {
+                                      $push: {
+                                        chats: {
+                                          $each: [
+                                            {
+                                              _id: friendChatId,
+                                              chatId,
+                                              friends: {
+                                                _id: userId,
+                                              },
+                                              isGroup: false,
+                                              unreadCount: friendUnreadCount,
                                             },
-                                            isGroup: false,
-                                            unreadCount: friendUnreadCount,
-                                          },
-                                        ],
-                                        $position: 0,
+                                          ],
+                                          $position: 0,
+                                        },
                                       },
                                     },
                                   },
                                 },
-                              },
-                            ];
-                            const addFriendMessage = () => {
+                              ];
+                              const addFriendMessage = () => {
+                                try {
+                                  const friendData = readJsonFileSync(
+                                    `../messages/${friendId}/${friendChatId}.json`
+                                  );
+                                  const currentFriendMessages = JSON.parse(friendData);
+                                  const newFriendMessages = [
+                                    ...friendMessages[index],
+                                    ...currentFriendMessages[index],
+                                  ];
+                                  writeJsonFile(
+                                    `../messages/${friendId}/${friendChatId}.json`,
+                                    newFriendMessages[index],
+                                    'sync'
+                                  );
+                                  console.log(
+                                    `Writing messages to friend of user - ${index}, chat- ${chatIndex}`
+                                  );
+                                } catch (error) {
+                                  writeJsonFile(
+                                    `../messages/${friendId}/${friendChatId}.json`,
+                                    friendMessages[index],
+                                    'sync'
+                                  );
+                                  console.log(
+                                    `Writing new messages to friend of user - ${index}, chat- ${chatIndex}`
+                                  );
+                                }
+                              };
                               try {
-                                const friendData = readJsonFileSync(
-                                  `../messages/${friendId}/${friendChatId}.json`
+                                const data = readJsonFileSync(
+                                  `../messages/${userId}/${mChatId}.json`
                                 );
-                                const currentFriendMessages = JSON.parse(friendData);
-                                const newFriendMessages = [
-                                  ...friendMessages[index],
-                                  ...currentFriendMessages[index],
-                                ];
+                                const currentMessages = JSON.parse(data);
+                                const newUserMessage = [...userMessages[index], ...currentMessages];
                                 writeJsonFile(
-                                  `../messages/${friendId}/${friendChatId}.json`,
-                                  newFriendMessages[index],
+                                  `../messages/${userId}/${mChatId}.json`,
+                                  newUserMessage,
                                   'sync'
                                 );
                                 console.log(
-                                  `Writing messages to friend of user - ${index}, chat- ${chatIndex}`
+                                  `Writing messages to user - ${index}, chat- ${chatIndex}`
                                 );
-                              } catch (error) {
+                                addFriendMessage();
+                                bulkPromises.push(
+                                  User.bulkWrite(bulkUpdate).then(() =>
+                                    console.log(
+                                      `Pushed friend to top of list user - ${index} chat - ${chatIndex}`
+                                    )
+                                  )
+                                );
+                              } catch (err) {
                                 writeJsonFile(
-                                  `../messages/${friendId}/${friendChatId}.json`,
-                                  friendMessages[index],
+                                  `../messages/${userId}/${mChatId}.json`,
+                                  userMessages[index],
                                   'sync'
                                 );
                                 console.log(
-                                  `Writing new messages to friend of user - ${index}, chat- ${chatIndex}`
+                                  `Writing new messages to user - ${index}, chat- ${chatIndex}`
+                                );
+                                addFriendMessage();
+                                bulkPromises.push(
+                                  User.bulkWrite(bulkUpdate).then(() =>
+                                    console.log(
+                                      `Pushed friend to top of list user - ${index} chat - ${chatIndex}`
+                                    )
+                                  )
                                 );
                               }
-                            };
-                            try {
-                              const data = readJsonFileSync(
-                                `../messages/${userId}/${mChatId}.json`
-                              );
-                              const currentMessages = JSON.parse(data);
-                              const newUserMessage = [...userMessages[index], ...currentMessages];
-                              writeJsonFile(
-                                `../messages/${userId}/${mChatId}.json`,
-                                newUserMessage,
-                                'sync'
-                              );
-                              console.log(
-                                `Writing messages to user - ${index}, chat- ${chatIndex}`
-                              );
-                              addFriendMessage();
-                              bulkPromises.push(
-                                User.bulkWrite(bulkUpdate).then(() =>
-                                  console.log(
-                                    `Pushed friend to top of list user - ${index} chat - ${chatIndex}`
-                                  )
-                                )
-                              );
-                            } catch (err) {
-                              writeJsonFile(
-                                `../messages/${userId}/${mChatId}.json`,
-                                userMessages[index],
-                                'sync'
-                              );
-                              console.log(
-                                `Writing new messages to user - ${index}, chat- ${chatIndex}`
-                              );
-                              addFriendMessage();
-                              bulkPromises.push(
-                                User.bulkWrite(bulkUpdate).then(() =>
-                                  console.log(
-                                    `Pushed friend to top of list user - ${index} chat - ${chatIndex}`
-                                  )
-                                )
-                              );
-                            }
-                          })
-                          .catch((error) => console.log(error))
-                      );
+                            })
+                            .catch((error) => console.log(error))
+                        );
+                      }
                     }
-                  }
-                );
+                  );
+                }
               });
               await Promise.all(messagesPromises).then(async () => {
                 await Promise.all(bulkPromises).then(() => {

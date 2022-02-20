@@ -29,7 +29,6 @@ class BinaryTree {
         }
       }
     }
-    return { node: newNode, tree: this };
   }
 
   toObject() {

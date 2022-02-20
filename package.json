@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "nodemon app.js",
+    "dev": "nodemon --max-old-space-size=4096 app.js",
     "devSet": "rm -r ./messages/ && mkdir messages && node --max-old-space-size=4096 ./dev/setAlotOfUsers.js"
   },
   "author": "Yaniv Schweitzer",

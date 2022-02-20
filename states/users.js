@@ -1,10 +1,10 @@
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/user');
+const AvlTree = require('../utils/AvlTree');
 const { getMessagesStream, checkFilePathExists } = require('../utils/fs');
 const setItemTime = require('../utils/setItemTime');
-const sortUsersArray = require('../utils/sortUsersArray');
 
-const users = new Map();
+const users = new AvlTree();
 
 User.find()
   .populate([
@@ -306,31 +306,36 @@ User.find()
           moreListPromises.push(
             User.find({ _id: { $nin: [userId, ...friendsIds, ...friendRequestsIds] } })
               .then((othersResult) => {
-                const sortedOthersList = sortUsersArray(othersResult);
-                const moreFriendsList = sortedOthersList.map((otherUser) => {
+                const moreFriendsList = [];
+                for (let i = 0; i < 20; i += 1) {
+                  const currentOther = othersResult[i];
                   const otherUserId = uuidv4();
-                  return {
+                  moreFriendsList.push({
                     otherUserId,
-                    _id: otherUser._id.toString(),
-                  };
-                });
+                    _id: currentOther._id.toString(),
+                  });
+                }
                 user.moreFriends = moreFriendsList;
-                const _id = userId.toString();
-                users.set(_id, user);
+                users.set({ _id: userId, ...user });
               })
               .catch((error) => {
                 console.log(error);
               })
           );
+          users.set({ _id: userId, ...user });
         })
       );
     });
     await Promise.all(usersPromises).then(async () => {
       console.log('Got all users');
+      console.log(users.toObject());
       await Promise.all(moreListPromises);
     });
   })
   .catch((error) => console.log(error))
-  .finally(() => console.log('Finally done!'));
+  .finally(() => {
+    console.log('Finally done!');
+    console.log(users.toObject());
+  });
 
 module.exports = users;

@@ -1,32 +1,116 @@
 const DoubledNode = require('./DoubledNode');
 
 class DoubledBlanacedNode extends DoubledNode {
-  constructor() {
-    super();
+  constructor(value) {
+    super(value);
     this.height = 1;
   }
 
-  add(value) {
-    if (value < this.value) {
-      if (this.left) {
-        this.left.add(value);
+  find(_id) {
+    if (this.value._id === _id) {
+      return this.value;
+    }
+    if (this.value._id > _id) {
+      return this.left.find(_id);
+    }
+    return this.right.find(_id);
+  }
+
+  getList(start) {
+    let i = 0;
+    let currentNode = this;
+    let tempParent = null;
+    let searching = true;
+    let goLeft = true;
+    const resultList = [];
+    while (searching) {
+      resultList.push(currentNode.value);
+      i += 1;
+      if (i < start + 20) {
+        let { left, right } = currentNode || {};
+        if (goLeft) {
+          if (left) {
+            tempParent = currentNode;
+            currentNode = left;
+          } else {
+            if (!right) {
+              if (!tempParent) {
+                searching = false;
+              } else {
+                currentNode = tempParent.right;
+              }
+            }
+            if (!tempParent) {
+              currentNode = right;
+            }
+          }
+        }
+        if (right) {
+          resultList.push(right.value);
+        }
+        if (goLeft) {
+          tempParent = currentNode;
+          currentNode = left;
+          if (!currentNode) {
+            currentNode = right;
+            if (!currentNode) {
+              searching = false;
+            }
+          }
+          if (currentNode) {
+            goLeft = false;
+          }
+        }
+        if (!goLeft) {
+          if (!tempParent) {
+          }
+          currentNode = tempParent;
+          left = currentNode.left || null;
+          right = currentNode.right || null;
+          if (!currentNode) {
+            currentNode = left;
+            if (!currentNode) {
+              searching = false;
+            }
+          }
+          if (currentNode) {
+            goLeft = true;
+          }
+        }
       } else {
-        this.left = new Node(value);
-      }
-      if (!this.right || this.right.height < this.left.height) {
-        this.height = this.left.height + 1;
-      }
-    } else {
-      if (this.right) {
-        this.right.add(value);
-      } else {
-        this.right = new Node(value);
-      }
-      if (!this.left || this.right.height > this.left.height) {
-        this.height = this.right.height + 1;
+        searching = false;
       }
     }
-    this.balance();
+  }
+
+  add(value) {
+    if (value._id === this.value._id) {
+      this.value = {
+        ...this.value,
+        ...value,
+      };
+    } else {
+      if (value._id < this.value._id) {
+        if (this.left) {
+          this.left.add(value);
+        } else {
+          this.left = new DoubledBlanacedNode(value);
+        }
+        if (!this.right || this.right.height < this.left.height) {
+          this.height = this.left.height + 1;
+        }
+      } else {
+        if (this.right) {
+          this.right.add(value);
+        } else {
+          this.right = new DoubledBlanacedNode(value);
+        }
+        if (!this.left || this.right.height > this.left.height) {
+          this.height = this.right.height + 1;
+        }
+      }
+      this.balance();
+    }
   }
 
   balance() {
@@ -88,6 +172,14 @@ class DoubledBlanacedNode extends DoubledNode {
     } else {
       this.height = this.right.height + 1;
     }
+  }
+
+  serialize() {
+    const ans = { value: this.value };
+    ans.left = this.left === null ? null : this.left.serialize();
+    ans.right = this.right === null ? null : this.right.serialize();
+    ans.height = this.height;
+    return ans;
   }
 }
 
