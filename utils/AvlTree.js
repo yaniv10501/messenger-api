@@ -5,11 +5,11 @@ class AvlTree {
     this.root = null;
   }
 
-  set(value) {
+  set(_id, value) {
     if (!this.root) {
-      this.root = new DoubledBlanacedNode(value);
+      this.root = new DoubledBlanacedNode({ _id, ...value });
     } else {
-      this.root.add(value);
+      this.root.add(_id, value);
     }
   }
 
@@ -20,18 +20,18 @@ class AvlTree {
     return this.root.find(_id);
   }
 
-  getList(start) {
+  getList(start, forbiddenList) {
     if (!this.root) {
       return null;
     }
     const queue = [];
     const list = [];
     queue.push(this.root);
-    return this.breadthFirstTraverse(queue, list, start || 0);
+    return this.breadthFirstTraverse(queue, list, start || 0, forbiddenList);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  breadthFirstTraverse(queue, array, start) {
+  breadthFirstTraverse(queue, array, start, forbiddenList) {
     if (queue.length < 0) return array;
 
     let i = 0;
@@ -43,11 +43,20 @@ class AvlTree {
         i += 1;
       } else {
         const node = queue.shift();
-        array.push(node.value);
-        if (node.left) queue.push(node.left);
-        if (node.right) queue.push(node.right);
-        if (i >= start + 20) {
-          queue.splice(0);
+        const isForbidden = forbiddenList.some(
+          (forbiddenItem) => forbiddenItem._id === node.value._id
+        );
+        if (isForbidden) {
+          if (node.left) queue.push(node.left);
+          if (node.right) queue.push(node.right);
+        } else {
+          array.push(node.value);
+          if (node.left) queue.push(node.left);
+          if (node.right) queue.push(node.right);
+          i += 1;
+          if (i >= start + 20) {
+            queue.splice(0);
+          }
         }
       }
     }

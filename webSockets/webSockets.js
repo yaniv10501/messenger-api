@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
+const users = require('../states/users');
 const { objectifyCookie } = require('../utils/cookie');
 
 const wsServer = new WebSocket.WebSocketServer({ noServer: true });
@@ -30,6 +31,9 @@ module.exports.initWebSocket = (server) => {
       const { _id, token } = jwt.verify(JwtWsToken, JWT_SECRET);
       console.log(`A new client has connected to websocket, userId - ${_id}, token - ${token}`);
       clients.set(_id, ws);
+      users.set(_id, {
+        isOnline: true,
+      });
       ws.isAlive = true;
       ws.on('pong', () => {
         console.log(`UserId - ${_id} has ponged back`);
@@ -38,8 +42,6 @@ module.exports.initWebSocket = (server) => {
       });
     } catch (error) {
       console.log('Connection refused');
-      const { refreshToken: refreshJwt } = objectedCookies;
-      console.log(refreshJwt);
     }
   });
 

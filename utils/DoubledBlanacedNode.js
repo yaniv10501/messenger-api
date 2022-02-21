@@ -16,27 +16,27 @@ class DoubledBlanacedNode extends DoubledNode {
     return this.right.find(_id);
   }
 
-  add(value) {
-    if (value._id === this.value._id) {
+  add(_id, value) {
+    if (this.value._id === _id) {
       this.value = {
         ...this.value,
         ...value,
       };
     } else {
-      if (value._id < this.value._id) {
+      if (this.value._id > _id) {
         if (this.left) {
-          this.left.add(value);
+          this.left.add(_id, value);
         } else {
-          this.left = new DoubledBlanacedNode(value);
+          this.left = new DoubledBlanacedNode({ _id, ...value });
         }
         if (!this.right || this.right.height < this.left.height) {
           this.height = this.left.height + 1;
         }
       } else {
         if (this.right) {
-          this.right.add(value);
+          this.right.add(_id, value);
         } else {
-          this.right = new DoubledBlanacedNode(value);
+          this.right = new DoubledBlanacedNode({ _id, ...value });
         }
         if (!this.left || this.right.height > this.left.height) {
           this.height = this.right.height + 1;

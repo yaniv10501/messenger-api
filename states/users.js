@@ -302,7 +302,7 @@ User.find()
           });
           console.log(`Got all user friend list user - ${index}`);
           user.pendingFriendRequests = pendingFriendRequestsList;
-          users.set({ _id: userId, ...user });
+          users.set(userId, user);
         })
       );
     });
