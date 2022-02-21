@@ -18,10 +18,11 @@ User.find()
     'blockedUsers',
   ])
   .then(async (currentRegisteredUsers) => {
+    // eslint-disable-next-line no-console
     console.log('All users found!');
     const usersPromises = [];
-    const moreListPromises = [];
     currentRegisteredUsers.forEach((registerdUser, index) => {
+      // eslint-disable-next-line no-console
       console.log(`Getting user info user - ${index}`);
       const {
         _id: mongoUserId,
@@ -51,6 +52,7 @@ User.find()
         blockedUsers,
         chatsCount: chats.length,
       };
+      // eslint-disable-next-line no-console
       console.log(`Got user info user - ${index}`);
       const friendList = [];
       for (let i = 0; i < 20; i += 1) {
@@ -106,6 +108,7 @@ User.find()
               chatPromises.push(
                 getMessagesStream(`../messages/${userId}/${_id}.json`).then(
                   ({ messages, loadedAll }) => {
+                    // eslint-disable-next-line no-console
                     console.log(`Got messages for user - ${userId}, chat - ${_id}`);
                     userMessages.set(chatId, {
                       _id,
@@ -269,6 +272,7 @@ User.find()
       }
       usersPromises.push(
         Promise.all(chatPromises).then((chatsList) => {
+          // eslint-disable-next-line no-console
           console.log(`Got user chat and messages list user - ${index}`);
           user.exChatsList = exChatsList;
           user.chats = chatsList;
@@ -300,22 +304,24 @@ User.find()
               requestTime: requestTimeFormat,
             };
           });
+          // eslint-disable-next-line no-console
           console.log(`Got all user friend list user - ${index}`);
           user.pendingFriendRequests = pendingFriendRequestsList;
           users.set(userId, user);
         })
       );
     });
-    await Promise.all(usersPromises).then(async () => {
-      console.log('Got all users');
-      console.log(users.toObject());
-      await Promise.all(moreListPromises);
-    });
-  })
+    await Promise.all(usersPromises).then(async () =>
+      // eslint-disable-next-line no-console
+      console.log('Got all users')
+    );
+  }) // eslint-disable-next-line no-console
   .catch((error) => console.log(error))
   .finally(() => {
-    console.log('Finally done!');
+    // eslint-disable-next-line no-console
     console.log(users.toObject());
+    // eslint-disable-next-line no-console
+    console.log('Finally done!');
   });
 
 module.exports = users;

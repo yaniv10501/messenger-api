@@ -36,6 +36,7 @@ User.create([
   },
 ])
   .then(async (result) => {
+    // eslint-disable-next-line no-console
     console.log(`Users successfully created!`);
     const friendPromises = [];
     for (let userIndex = 0; userIndex < result.length; userIndex += 1) {
@@ -102,8 +103,9 @@ User.create([
                 },
               },
             },
-          ];
+          ]; // eslint-disable-next-line no-console
           console.log(`Adding friend to user - ${userIndex}, friend - ${otherIndex}`);
+          // eslint-disable-next-line no-console
           friendPromises.push(User.bulkWrite(bulkUpdate).catch((error) => console.log(error)));
           const emptyGroupId = uuidv4();
           friendPromises.push(
@@ -122,7 +124,7 @@ User.create([
           );
         }
       }
-    }
+    } // eslint-disable-next-line no-console
     await Promise.all(friendPromises).then(() => console.log('Done!'));
-  })
+  }) // eslint-disable-next-line no-console
   .catch((error) => console.log(error));

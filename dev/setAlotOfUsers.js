@@ -47,6 +47,7 @@ for (let i = 0; i < 5000; i += 1) {
   }
   userMessages.push(tempUserMessages);
   friendMessages.push(tempFriendMessages);
+  // eslint-disable-next-line no-console
   console.log(`Finished writing messages for user - ${i}!`);
 }
 
@@ -54,6 +55,7 @@ User.deleteMany()
   .then(async () => {
     await User.create(usersArray)
       .then(async (result) => {
+        // eslint-disable-next-line no-console
         console.log(`Users successfully created!`);
         const friendPromises = [];
         await result.forEach((user, userIndex) => {
@@ -136,7 +138,9 @@ User.deleteMany()
                   },
                 },
               ];
+              // eslint-disable-next-line no-console
               console.log(`Adding friend to user - ${userIndex}, friend - ${otherIndex}`);
+              // eslint-disable-next-line no-console
               friendPromises.push(User.bulkWrite(bulkUpdate).catch((error) => console.log(error)));
             }
           });
@@ -252,6 +256,7 @@ User.deleteMany()
                                     newFriendMessages[index],
                                     'sync'
                                   );
+                                  // eslint-disable-next-line no-console
                                   console.log(
                                     `Writing messages to friend of user - ${index}, chat- ${chatIndex}`
                                   );
@@ -261,6 +266,7 @@ User.deleteMany()
                                     friendMessages[index],
                                     'sync'
                                   );
+                                  // eslint-disable-next-line no-console
                                   console.log(
                                     `Writing new messages to friend of user - ${index}, chat- ${chatIndex}`
                                   );
@@ -277,12 +283,14 @@ User.deleteMany()
                                   newUserMessage,
                                   'sync'
                                 );
+                                // eslint-disable-next-line no-console
                                 console.log(
                                   `Writing messages to user - ${index}, chat- ${chatIndex}`
                                 );
                                 addFriendMessage();
                                 bulkPromises.push(
                                   User.bulkWrite(bulkUpdate).then(() =>
+                                    // eslint-disable-next-line no-console
                                     console.log(
                                       `Pushed friend to top of list user - ${index} chat - ${chatIndex}`
                                     )
@@ -294,19 +302,21 @@ User.deleteMany()
                                   userMessages[index],
                                   'sync'
                                 );
+                                // eslint-disable-next-line no-console
                                 console.log(
                                   `Writing new messages to user - ${index}, chat- ${chatIndex}`
                                 );
                                 addFriendMessage();
                                 bulkPromises.push(
                                   User.bulkWrite(bulkUpdate).then(() =>
+                                    // eslint-disable-next-line no-console
                                     console.log(
                                       `Pushed friend to top of list user - ${index} chat - ${chatIndex}`
                                     )
                                   )
                                 );
                               }
-                            })
+                            }) // eslint-disable-next-line no-console
                             .catch((error) => console.log(error))
                         );
                       }
@@ -317,13 +327,14 @@ User.deleteMany()
               await Promise.all(messagesPromises).then(async () => {
                 await Promise.all(bulkPromises).then(() => {
                   writeJsonFile('../utils/usersIds.json', usersIds, 'sync');
+                  // eslint-disable-next-line no-console
                   console.log('Done!');
                 });
               });
-            })
+            }) // eslint-disable-next-line no-console
             .catch((error) => console.log(error));
         });
-      })
+      }) // eslint-disable-next-line no-console
       .catch((error) => console.log(error));
-  })
+  }) // eslint-disable-next-line no-console
   .catch((error) => console.log(error));

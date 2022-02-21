@@ -5,6 +5,8 @@ const User = require('../models/user');
 const Tokens = require('../models/token');
 const AuthorizationError = require('../utils/errors/AuthorizationError');
 const checkErrors = require('../utils/checkErrors');
+const users = require('../states/users');
+const { webSocketClients } = require('../webSockets/webSockets');
 
 module.exports.login = (req, res, next) => {
   const { JWT_SECRET = 'Secret-key' } = process.env;
@@ -138,6 +140,21 @@ module.exports.logout = (req, res, next) => {
   const { _id } = req.user;
   Tokens.deleteOne({ userId: _id })
     .then(() => {
+      const currentUser = users.get(_id);
+      const currentSocket = webSocketClients.get(_id, { destruct: false });
+      currentUser.isOnline = false;
+      currentUser.socket = null;
+      currentSocket.terminate();
+      webSocketClients.delete(_id);
+      users.set(
+        _id,
+        {
+          isOnline: false,
+        },
+        {
+          isNew: false,
+        }
+      );
       res.cookie('authorization', '', {
         maxAge: 0,
         httpOnly: false,

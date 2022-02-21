@@ -1,42 +1,68 @@
 const DoubledNode = require('./DoubledNode');
 
 class DoubledBlanacedNode extends DoubledNode {
-  constructor(value) {
+  constructor(_id, value) {
     super(value);
+    this._id = _id;
     this.height = 1;
   }
 
-  find(_id) {
-    if (this.value._id === _id) {
+  /**
+   * @method find - Find a value by the id of the node.
+   * @param {String} _id - The id of the node to be found.
+   * @param {Boolean} options.destruct - Should the value be destructed for return, defualt to true.
+   * @returns The found value
+   */
+
+  find(_id, options) {
+    const { destruct = true } = options || {};
+    if (this._id === _id) {
+      if (destruct) {
+        return { _id: this._id, ...this.value };
+      }
       return this.value;
     }
-    if (this.value._id > _id) {
-      return this.left.find(_id);
+    if (this._id > _id) {
+      if (this.left) {
+        return this.left.find(_id, options);
+      }
     }
-    return this.right.find(_id);
+    if (this.right) {
+      return this.right.find(_id, options);
+    }
+    return null;
   }
 
-  add(_id, value) {
-    if (this.value._id === _id) {
-      this.value = {
-        ...this.value,
-        ...value,
-      };
+  add(_id, value, options) {
+    let modifiedSize;
+    const { isNew = true } = options || {};
+
+    if (this._id === _id) {
+      if (isNew) {
+        this.value = value;
+      } else {
+        this.value = {
+          ...this.value,
+          ...value,
+        };
+      }
     } else {
-      if (this.value._id > _id) {
+      if (this._id > _id) {
         if (this.left) {
-          this.left.add(_id, value);
+          modifiedSize = this.left.add(_id, value, options);
         } else {
-          this.left = new DoubledBlanacedNode({ _id, ...value });
+          this.left = new DoubledBlanacedNode(_id, value);
+          modifiedSize = true;
         }
         if (!this.right || this.right.height < this.left.height) {
           this.height = this.left.height + 1;
         }
       } else {
         if (this.right) {
-          this.right.add(_id, value);
+          modifiedSize = this.right.add(_id, value, options);
         } else {
-          this.right = new DoubledBlanacedNode({ _id, ...value });
+          this.right = new DoubledBlanacedNode(_id, value);
+          modifiedSize = true;
         }
         if (!this.left || this.right.height > this.left.height) {
           this.height = this.right.height + 1;
@@ -44,6 +70,7 @@ class DoubledBlanacedNode extends DoubledNode {
       }
       this.balance();
     }
+    return modifiedSize;
   }
 
   balance() {
@@ -72,27 +99,31 @@ class DoubledBlanacedNode extends DoubledNode {
   }
 
   rotateRR() {
-    const valueBefore = this.value;
+    const valueBefore = { _id: this._id, value: this.value };
     const leftBefore = this.left;
+    this._id = this.right._id;
     this.value = this.right.value;
     this.left = this.right;
     this.right = this.right.right;
     this.left.right = this.left.left;
     this.left.left = leftBefore;
-    this.left.value = valueBefore;
+    this.left.value = valueBefore.value;
+    this.left._id = valueBefore._id;
     this.left.updateInNewLocation();
     this.updateInNewLocation();
   }
 
   rotateLL() {
-    const valueBefore = this.value;
+    const valueBefore = { _id: this._id, value: this.value };
     const rightBefore = this.right;
+    this._id = this.left._id;
     this.value = this.left.value;
     this.right = this.left;
     this.left = this.left.left;
     this.right.left = this.right.right;
     this.right.right = rightBefore;
-    this.right.value = valueBefore;
+    this.right.value = valueBefore.value;
+    this.right._id = valueBefore._id;
     this.right.updateInNewLocation();
     this.updateInNewLocation();
   }
@@ -108,7 +139,7 @@ class DoubledBlanacedNode extends DoubledNode {
   }
 
   serialize() {
-    const ans = { value: this.value };
+    const ans = { _id: this._id, value: this.value };
     ans.left = this.left === null ? null : this.left.serialize();
     ans.right = this.right === null ? null : this.right.serialize();
     ans.height = this.height;

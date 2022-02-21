@@ -90,6 +90,7 @@ module.exports.createUser = (req, res, next) => {
                 newUserState.moreFriends = moreFriendsList;
               })
               .catch((error) => {
+                // eslint-disable-next-line no-console
                 console.log(error);
               });
             res.status(201).json({
@@ -142,6 +143,7 @@ module.exports.setUserImage = (req, res, next) => {
         runValidators: true,
       }
     )
+      // eslint-disable-next-line no-console
       .then(() => console.log('Profile image status updated in mongo'))
       .catch((error) => {
         throw error;
