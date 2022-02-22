@@ -307,6 +307,7 @@ User.find()
           // eslint-disable-next-line no-console
           console.log(`Got all user friend list user - ${index}`);
           user.pendingFriendRequests = pendingFriendRequestsList;
+          user.dontDisturb = [];
           users.set(userId, user);
         })
       );

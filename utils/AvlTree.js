@@ -1,3 +1,4 @@
+const { isFunction } = require('lodash');
 const DoubledBlanacedNode = require('./DoubledBlanacedNode');
 
 class AvlTree {
@@ -8,10 +9,64 @@ class AvlTree {
 
   set(_id, value, options) {
     if (!this.root) {
-      this.root = new DoubledBlanacedNode(_id, value);
+      this.root = new DoubledBlanacedNode(_id, value, null);
       this.size = 1;
     } else {
-      const modifiedSize = this.root.add(_id, value, options);
+      let modifiedSize;
+      let searching = true;
+      let ascending = true;
+      let currentNode = this.root;
+      const { isNew = true } = options || {};
+      while (searching) {
+        if (currentNode._id === _id) {
+          if (isNew) {
+            currentNode.value = value;
+          } else if (isFunction(value)) {
+            currentNode.value = value(currentNode.value);
+          } else {
+            currentNode.value = {
+              ...currentNode.value,
+              ...value,
+            };
+          }
+          searching = false;
+          ascending = false;
+        }
+        if (currentNode._id > _id) {
+          if (currentNode.left) {
+            currentNode = currentNode.left;
+          } else {
+            currentNode.left = new DoubledBlanacedNode(_id, value, currentNode);
+            modifiedSize = true;
+            searching = false;
+          }
+        }
+        if (currentNode._id < _id) {
+          if (currentNode.right) {
+            currentNode = currentNode.right;
+          } else {
+            currentNode.right = new DoubledBlanacedNode(_id, value, currentNode);
+            modifiedSize = true;
+            searching = false;
+          }
+        }
+      }
+      while (ascending) {
+        if (currentNode.parent) {
+          const rightHeight = currentNode.parent.right ? currentNode.parent.right.height : 0;
+          const leftHeight = currentNode.parent.left ? currentNode.parent.left.height : 0;
+          currentNode = currentNode.parent;
+          currentNode.balance();
+          if (!currentNode.left || rightHeight > leftHeight) {
+            currentNode.height = rightHeight + 1;
+          }
+          if (!currentNode.right || rightHeight < leftHeight) {
+            currentNode.height = leftHeight + 1;
+          }
+        } else {
+          ascending = false;
+        }
+      }
       if (modifiedSize) {
         this.size += 1;
       }
@@ -22,30 +77,91 @@ class AvlTree {
     if (!this.root) {
       return null;
     }
-    return this.root.find(_id, options);
+    let searching = true;
+    let currentNode = this.root;
+    const { destruct = true, find = false } = options || {};
+    while (searching) {
+      if (currentNode._id === _id) {
+        searching = false;
+      }
+      if (currentNode._id > _id) {
+        if (currentNode.left) {
+          currentNode = currentNode.left;
+        }
+      }
+      if (currentNode.right) {
+        currentNode = currentNode.right;
+      }
+    }
+    if (find) {
+      return currentNode;
+    }
+    if (destruct) {
+      return { _id: currentNode._id, ...currentNode.value };
+    }
+    return currentNode.value;
   }
 
   delete(_id) {
     if (!this.root) {
       return null;
     }
-    if (!this.root.left && !this.root.right) {
-      this.root = null;
-      this.size = 0;
-      return this;
+    const deletedNode = this.get(_id, { destruct: false, find: true });
+    if (!deletedNode) {
+      return null;
     }
-    const deletedNode = this.root.find(_id, { destruct: false });
-    let currentNode = deletedNode;
-    let searching = true;
-    while (searching) {
-      if (currentNode.right) {
-        currentNode.value = currentNode.right.value;
-        currentNode._id = currentNode.right._id;
-        currentNode = currentNode.right;
+    if (deletedNode.height === 1) {
+      deletedNode.value = null;
+      deletedNode._id = null;
+      deletedNode.parent = null;
+    }
+    if (deletedNode.height === 2) {
+      if (deletedNode.right) {
+        deletedNode.value = deletedNode.right.value;
+        deletedNode._id = deletedNode.right._id;
+        deletedNode.parent = deletedNode.right.parent;
+        deletedNode.right.value = null;
+        deletedNode.right._id = null;
+        deletedNode.right.parent = null;
       } else {
-        currentNode.value = null;
-        currentNode._id = null;
-        searching = false;
+        deletedNode.value = deletedNode.left.value;
+        deletedNode._id = deletedNode.left._id;
+        deletedNode.parent = deletedNode.left.parent;
+        deletedNode.left.value = null;
+        deletedNode.left._id = null;
+        deletedNode.left.parent = null;
+      }
+    } else if (deletedNode.right) {
+      let currentNode = deletedNode.right;
+      let searching = true;
+      while (searching) {
+        if (currentNode.left) {
+          currentNode = currentNode.left;
+        } else {
+          deletedNode.value = currentNode.value;
+          deletedNode._id = currentNode._id;
+          deletedNode.parent = currentNode.parent;
+          currentNode.value = null;
+          currentNode._id = null;
+          currentNode.parent = null;
+          searching = false;
+        }
+      }
+    } else {
+      let currentNode = deletedNode.left;
+      let searching = true;
+      while (searching) {
+        if (currentNode.right) {
+          currentNode = currentNode.right;
+        } else {
+          deletedNode.value = currentNode.value;
+          deletedNode._id = currentNode._id;
+          deletedNode.parent = currentNode.parent;
+          currentNode.value = null;
+          currentNode._id = null;
+          currentNode.parent = null;
+          searching = false;
+        }
       }
     }
     this.root.balance();

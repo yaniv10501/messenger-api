@@ -13,6 +13,7 @@ const {
   getUserMoreFriendsList,
   getUserFriendsList,
   getUserGroupFriendsList,
+  setUserDontDisturbProfile,
 } = require('../lib/users');
 const {
   getUserChats,
@@ -205,8 +206,10 @@ module.exports.getFriendImage = (req, res, next) => {
 module.exports.getUserMe = (req, res, next) => {
   try {
     const { _id } = req.user;
+    console.log(_id);
     const currentUser = users.get(_id);
-    const { firstName, lastName, email, image, messages } = currentUser;
+    const { firstName, lastName, email, image, messages, dontDisturb } = currentUser;
+    console.log(dontDisturb);
     User.findOne({ _id })
       .select(['chats'])
       .then(({ chats }) => {
@@ -224,7 +227,7 @@ module.exports.getUserMe = (req, res, next) => {
         }
         currentUser.loadedChats = chatLimit;
       });
-    res.json({ name: `${firstName} ${lastName}`, email, image });
+    res.json({ name: `${firstName} ${lastName}`, email, image, dontDisturb });
   } catch (error) {
     checkErrors(error, next);
   }
@@ -462,6 +465,16 @@ module.exports.getMoreGroupFriends = (req, res, next) => {
     const { groupId } = req.params;
     const moreGroupFriends = getMoreUserGroupFriends(_id, groupId);
     res.json(moreGroupFriends);
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.setDontDisturbProfile = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    setUserDontDisturbProfile(_id);
+    res.json({ message: 'Wont diturb about profile no more' });
   } catch (error) {
     checkErrors(error, next);
   }

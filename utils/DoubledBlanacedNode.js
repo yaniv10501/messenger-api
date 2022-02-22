@@ -1,10 +1,11 @@
 const DoubledNode = require('./DoubledNode');
 
 class DoubledBlanacedNode extends DoubledNode {
-  constructor(_id, value) {
+  constructor(_id, value, parent) {
     super(value);
     this._id = _id;
     this.height = 1;
+    this.parent = parent;
   }
 
   /**
@@ -13,65 +14,6 @@ class DoubledBlanacedNode extends DoubledNode {
    * @param {Boolean} options.destruct - Should the value be destructed for return, defualt to true.
    * @returns The found value
    */
-
-  find(_id, options) {
-    const { destruct = true } = options || {};
-    if (this._id === _id) {
-      if (destruct) {
-        return { _id: this._id, ...this.value };
-      }
-      return this.value;
-    }
-    if (this._id > _id) {
-      if (this.left) {
-        return this.left.find(_id, options);
-      }
-    }
-    if (this.right) {
-      return this.right.find(_id, options);
-    }
-    return null;
-  }
-
-  add(_id, value, options) {
-    let modifiedSize;
-    const { isNew = true } = options || {};
-
-    if (this._id === _id) {
-      if (isNew) {
-        this.value = value;
-      } else {
-        this.value = {
-          ...this.value,
-          ...value,
-        };
-      }
-    } else {
-      if (this._id > _id) {
-        if (this.left) {
-          modifiedSize = this.left.add(_id, value, options);
-        } else {
-          this.left = new DoubledBlanacedNode(_id, value);
-          modifiedSize = true;
-        }
-        if (!this.right || this.right.height < this.left.height) {
-          this.height = this.left.height + 1;
-        }
-      } else {
-        if (this.right) {
-          modifiedSize = this.right.add(_id, value, options);
-        } else {
-          this.right = new DoubledBlanacedNode(_id, value);
-          modifiedSize = true;
-        }
-        if (!this.left || this.right.height > this.left.height) {
-          this.height = this.right.height + 1;
-        }
-      }
-      this.balance();
-    }
-    return modifiedSize;
-  }
 
   balance() {
     const rightHeight = this.right ? this.right.height : 0;
