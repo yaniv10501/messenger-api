@@ -60,24 +60,26 @@ module.exports.initWebSocket = (server) => {
     // eslint-disable-next-line no-console
     console.log(`There are ${clients.size} clients connected`);
     clients.forEach((webSocket, _id) => {
-      const currentSocket = webSocket;
-      if (currentSocket.isAlive === false) {
-        currentSocket.terminate();
-        clients.delete(_id);
-        users.set(
-          _id,
-          {
-            isOnline: false,
-          },
-          {
-            isNew: false,
-          }
-        );
-      } else {
-        // eslint-disable-next-line no-console
-        console.log(`Trying to ping userId - ${_id}`);
-        currentSocket.isAlive = false;
-        currentSocket.ping();
+      if (webSocket) {
+        const currentSocket = webSocket;
+        if (currentSocket.isAlive === false) {
+          currentSocket.terminate();
+          clients.delete(_id);
+          users.set(
+            _id,
+            {
+              isOnline: false,
+            },
+            {
+              isNew: false,
+            }
+          );
+        } else {
+          // eslint-disable-next-line no-console
+          console.log(`Trying to ping userId - ${_id}`);
+          currentSocket.isAlive = false;
+          currentSocket.ping();
+        }
       }
     });
   }, 10000);

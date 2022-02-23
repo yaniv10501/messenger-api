@@ -87,11 +87,15 @@ class AvlTree {
       } else if (currentNode._id > _id) {
         if (currentNode.left) {
           currentNode = currentNode.left;
+        } else {
+          return null;
         }
-      } else if (currentNode.right) {
-        currentNode = currentNode.right;
-      } else {
-        return null;
+      } else if (currentNode._id < _id) {
+        if (currentNode.right) {
+          currentNode = currentNode.right;
+        } else {
+          return null;
+        }
       }
     }
     if (find) {
@@ -132,36 +136,39 @@ class AvlTree {
         deletedNode.left._id = null;
         deletedNode.left.parent = null;
       }
-    } else if (deletedNode.right) {
-      let currentNode = deletedNode.right;
-      let searching = true;
-      while (searching) {
-        if (currentNode.left) {
-          currentNode = currentNode.left;
-        } else {
-          deletedNode.value = currentNode.value;
-          deletedNode._id = currentNode._id;
-          deletedNode.parent = currentNode.parent;
-          currentNode.value = null;
-          currentNode._id = null;
-          currentNode.parent = null;
-          searching = false;
+    }
+    if (deletedNode.height > 2) {
+      if (deletedNode.right) {
+        let currentNode = deletedNode.right;
+        let searching = true;
+        while (searching) {
+          if (currentNode.left) {
+            currentNode = currentNode.left;
+          } else {
+            deletedNode.value = currentNode.value;
+            deletedNode._id = currentNode._id;
+            deletedNode.parent = currentNode.parent;
+            currentNode.value = null;
+            currentNode._id = null;
+            currentNode.parent = null;
+            searching = false;
+          }
         }
-      }
-    } else {
-      let currentNode = deletedNode.left;
-      let searching = true;
-      while (searching) {
-        if (currentNode.right) {
-          currentNode = currentNode.right;
-        } else {
-          deletedNode.value = currentNode.value;
-          deletedNode._id = currentNode._id;
-          deletedNode.parent = currentNode.parent;
-          currentNode.value = null;
-          currentNode._id = null;
-          currentNode.parent = null;
-          searching = false;
+      } else {
+        let currentNode = deletedNode.left;
+        let searching = true;
+        while (searching) {
+          if (currentNode.right) {
+            currentNode = currentNode.right;
+          } else {
+            deletedNode.value = currentNode.value;
+            deletedNode._id = currentNode._id;
+            deletedNode.parent = currentNode.parent;
+            currentNode.value = null;
+            currentNode._id = null;
+            currentNode.parent = null;
+            searching = false;
+          }
         }
       }
     }
