@@ -94,6 +94,11 @@ const chatSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
+  userName: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   firstName: {
     type: String,
     required: true,
@@ -164,6 +169,7 @@ const userSchema = new mongoose.Schema({
       default: [],
     },
   ],
+  dontDisturb: [{ type: String, default: [] }],
 });
 
 module.exports = mongoose.model('user', userSchema);

@@ -96,6 +96,8 @@ class AvlTree {
         } else {
           return null;
         }
+      } else {
+        return null;
       }
     }
     if (find) {
@@ -116,63 +118,140 @@ class AvlTree {
       return null;
     }
     if (deletedNode.height === 1) {
+      let currentNode = deletedNode.parent;
+      let ascending;
       deletedNode.value = null;
       deletedNode._id = null;
       deletedNode.parent = null;
+      deletedNode.height = 0;
+      if (!currentNode) {
+        ascending = false;
+        this.root = null;
+      }
+      while (ascending) {
+        const rightHeight = currentNode.right ? currentNode.right.height : 0;
+        const leftHeight = currentNode.left ? currentNode.left.height : 0;
+        if (!currentNode.left || rightHeight > leftHeight) {
+          currentNode.height = rightHeight + 1;
+        }
+        if (!currentNode.right || rightHeight < leftHeight) {
+          currentNode.height = leftHeight + 1;
+        }
+        currentNode.balance();
+        if (currentNode.parent) {
+          currentNode = currentNode.parent;
+        } else {
+          ascending = false;
+        }
+      }
     }
     if (deletedNode.height === 2) {
+      let currentNode = deletedNode;
+      let ascending;
       if (deletedNode.right) {
         deletedNode.value = deletedNode.right.value;
         deletedNode._id = deletedNode.right._id;
-        deletedNode.parent = deletedNode.right.parent;
         deletedNode.right.value = null;
         deletedNode.right._id = null;
         deletedNode.right.parent = null;
+        deletedNode.right.height = 0;
+        deletedNode.right = null;
       } else {
         deletedNode.value = deletedNode.left.value;
         deletedNode._id = deletedNode.left._id;
-        deletedNode.parent = deletedNode.left.parent;
         deletedNode.left.value = null;
         deletedNode.left._id = null;
         deletedNode.left.parent = null;
+        deletedNode.left.height = 0;
+        deletedNode.left = null;
+      }
+      while (ascending) {
+        const rightHeight = currentNode.right ? currentNode.right.height : 0;
+        const leftHeight = currentNode.left ? currentNode.left.height : 0;
+        if (!currentNode.left || rightHeight > leftHeight) {
+          currentNode.height = rightHeight + 1;
+        }
+        if (!currentNode.right || rightHeight < leftHeight) {
+          currentNode.height = leftHeight + 1;
+        }
+        currentNode.balance();
+        if (currentNode.parent) {
+          currentNode = currentNode.parent;
+        } else {
+          ascending = false;
+        }
       }
     }
     if (deletedNode.height > 2) {
       if (deletedNode.right) {
         let currentNode = deletedNode.right;
         let searching = true;
+        let ascending = true;
         while (searching) {
           if (currentNode.left) {
             currentNode = currentNode.left;
           } else {
             deletedNode.value = currentNode.value;
             deletedNode._id = currentNode._id;
-            deletedNode.parent = currentNode.parent;
             currentNode.value = null;
             currentNode._id = null;
+            currentNode.parent.left = null;
             currentNode.parent = null;
+            currentNode.height = 0;
             searching = false;
+          }
+        }
+        while (ascending) {
+          const rightHeight = currentNode.right ? currentNode.right.height : 0;
+          const leftHeight = currentNode.left ? currentNode.left.height : 0;
+          if (!currentNode.left || rightHeight > leftHeight) {
+            currentNode.height = rightHeight + 1;
+          }
+          if (!currentNode.right || rightHeight < leftHeight) {
+            currentNode.height = leftHeight + 1;
+          }
+          currentNode.balance();
+          if (currentNode.parent) {
+            currentNode = currentNode.parent;
+          } else {
+            ascending = false;
           }
         }
       } else {
         let currentNode = deletedNode.left;
         let searching = true;
+        let ascending = true;
         while (searching) {
           if (currentNode.right) {
             currentNode = currentNode.right;
           } else {
             deletedNode.value = currentNode.value;
             deletedNode._id = currentNode._id;
-            deletedNode.parent = currentNode.parent;
             currentNode.value = null;
             currentNode._id = null;
+            currentNode.parent.right = null;
             currentNode.parent = null;
             searching = false;
           }
         }
+        while (ascending) {
+          const rightHeight = currentNode.right ? currentNode.right.height : 0;
+          const leftHeight = currentNode.left ? currentNode.left.height : 0;
+          if (!currentNode.left || rightHeight > leftHeight) {
+            currentNode.height = rightHeight + 1;
+          }
+          if (!currentNode.right || rightHeight < leftHeight) {
+            currentNode.height = leftHeight + 1;
+          }
+          currentNode.balance();
+          if (currentNode.parent) {
+            currentNode = currentNode.parent;
+          } else {
+            ascending = false;
+          }
+        }
       }
     }
-    this.root.balance();
     this.size -= 1;
     return this;
   }

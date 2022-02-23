@@ -23,6 +23,7 @@ const {
   getNewChat,
   getMoreGroupFriends,
   setDontDisturbProfile,
+  resetChatUnread,
 } = require('../controllers/users');
 const { login, logout } = require('../controllers/auth');
 const auth = require('../middlewares/auth');
@@ -76,11 +77,13 @@ router.get('/api/messages/:chatId', getMessages);
 
 router.get('/api/messages/more/:chatId', getMoreMessages);
 
-router.patch('/api/image/:chatId', setGroupImage);
+router.patch('/api/group/image/:chatId', setGroupImage);
 
 router.post('/api/group/new', initNewGroup);
 
 router.get('/api/friends/more/:groupId', getMoreGroupFriends);
+
+router.post('/api/chats/unread/reset/:chatId', resetChatUnread);
 
 router.post('/api/leave/:chatId', leaveChat);
 

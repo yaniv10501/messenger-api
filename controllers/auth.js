@@ -140,21 +140,11 @@ module.exports.logout = (req, res, next) => {
   const { _id } = req.user;
   Tokens.deleteOne({ userId: _id })
     .then(() => {
-      const currentUser = users.get(_id);
+      const currentUser = users.get(_id, { destruct: false });
       const currentSocket = webSocketClients.get(_id, { destruct: false });
       currentUser.isOnline = false;
-      currentUser.socket = null;
       currentSocket.terminate();
       webSocketClients.delete(_id);
-      users.set(
-        _id,
-        {
-          isOnline: false,
-        },
-        {
-          isNew: false,
-        }
-      );
       res.cookie('authorization', '', {
         maxAge: 0,
         httpOnly: false,

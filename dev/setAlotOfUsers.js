@@ -14,9 +14,11 @@ const userMessages = [];
 const friendMessages = [];
 
 for (let i = 0; i < 5000; i += 1) {
+  const userText = `User${i}`;
   usersArray.push({
-    firstName: `User${i}`,
-    lastName: `User${i}`,
+    userName: userText,
+    firstName: userText,
+    lastName: userText,
     gender: 'male',
     birthday: '01/01/2020',
     password: '$2a$10$NYLGEXcuIceWjLEBkvedtOMItrZgaZT3W.fbTQjG3JQ6jaY3BhcsW',
@@ -26,7 +28,7 @@ for (let i = 0; i < 5000; i += 1) {
   const tempUserMessages = [];
   const tempFriendMessages = [];
   const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate } = getTime();
-  for (let userI = 0; userI < 20; userI += 1) {
+  for (let userI = 0; userI < 500; userI += 1) {
     const messageId = uuidv4();
     const newMessage = {
       _id: messageId,

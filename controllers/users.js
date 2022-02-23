@@ -24,6 +24,7 @@ const {
   getUserComposeList,
   getUserNewChat,
   getMoreUserGroupFriends,
+  resetUserChatUnread,
 } = require('../lib/chats');
 const {
   addUserFriendRequest,
@@ -70,7 +71,6 @@ module.exports.createUser = (req, res, next) => {
             const newEmptyGroup = newUser.chats[0];
             const newUserState = users.get(_id);
             newUserState.emptyGroup = newEmptyGroup;
-            newUserState.exChatsList = [];
             newUserState.chats = [];
             newUserState.messages = new Map();
             newUserState.loadedChats = 0;
@@ -206,10 +206,8 @@ module.exports.getFriendImage = (req, res, next) => {
 module.exports.getUserMe = (req, res, next) => {
   try {
     const { _id } = req.user;
-    console.log(_id);
     const currentUser = users.get(_id);
     const { firstName, lastName, email, image, messages, dontDisturb } = currentUser;
-    console.log(dontDisturb);
     User.findOne({ _id })
       .select(['chats'])
       .then(({ chats }) => {
@@ -474,7 +472,18 @@ module.exports.setDontDisturbProfile = (req, res, next) => {
   try {
     const { _id } = req.user;
     setUserDontDisturbProfile(_id);
-    res.json({ message: 'Wont diturb about profile no more' });
+    res.json({ message: 'Wont disturb about profile no more' });
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.resetChatUnread = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { chatId } = req.params;
+    resetUserChatUnread(_id, chatId);
+    res.json({ message: `Chat - ${chatId} unread count is now 0` });
   } catch (error) {
     checkErrors(error, next);
   }

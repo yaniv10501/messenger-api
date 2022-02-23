@@ -37,6 +37,7 @@ User.find()
         friendRequests,
         pendingFriendRequests,
         blockedUsers,
+        dontDisturb,
       } = registerdUser;
       const userId = mongoUserId.toString();
       const user = {
@@ -50,6 +51,7 @@ User.find()
         friendRequests,
         pendingFriendRequests,
         blockedUsers,
+        dontDisturb,
         chatsCount: chats.length,
       };
       // eslint-disable-next-line no-console
@@ -68,11 +70,9 @@ User.find()
       user.queue = [];
       user.friends = friendList;
       const userMessages = new Map();
-      const exChatsList = [];
       let chatLimit = 20;
       const chatPromises = [];
       for (let i = 0; i < chatLimit; i += 1) {
-        const chatFriendsExList = [];
         const chat = chats[i];
         if (chat) {
           const _id = chat._id.toString();
@@ -94,10 +94,6 @@ User.find()
             const chatFriendslist = chatFriends.map((chatFriend) => {
               const { _id: mongoFriendId } = chatFriend;
               const friendId = uuidv4();
-              chatFriendsExList.push({
-                _id: mongoFriendId.toString(),
-                friendId,
-              });
               return {
                 _id: mongoFriendId.toString(),
                 friendId,
@@ -112,7 +108,7 @@ User.find()
                     console.log(`Got messages for user - ${userId}, chat - ${_id}`);
                     userMessages.set(chatId, {
                       _id,
-                      friends: chatFriendsExList,
+                      friends: chatFriendslist,
                       messages,
                       loadedCount: 49,
                       loadedAll,
@@ -126,19 +122,6 @@ User.find()
                       messageTime
                     );
                     if (isGroup) {
-                      exChatsList.push({
-                        _id,
-                        chatId,
-                        isGroup,
-                        groupAdmin,
-                        friends: chatFriendsExList,
-                        chatName: groupName,
-                        chatImage: groupImage,
-                        isMute,
-                        lastMessage: lastChatMessage.messageContent,
-                        lastMessageTime,
-                        unreadCount,
-                      });
                       return {
                         _id,
                         chatId,
@@ -153,18 +136,6 @@ User.find()
                         unreadCount,
                       };
                     }
-                    exChatsList.push({
-                      _id,
-                      chatId,
-                      friends: chatFriendsExList,
-                      isGroup,
-                      chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
-                      chatImage: chatFriends[0].image,
-                      isMute,
-                      lastMessage: lastChatMessage.messageContent,
-                      lastMessageTime,
-                      unreadCount,
-                    });
                     return {
                       _id,
                       chatId,
@@ -184,7 +155,7 @@ User.find()
             if (!filePathExists) {
               userMessages.set(chatId, {
                 _id,
-                friends: chatFriendsExList,
+                friends: chatFriendslist,
                 messages: [],
                 loadedCount: 49,
                 loadedAll: true,
@@ -195,19 +166,6 @@ User.find()
               if (isGroup) {
                 chatPromises.push(
                   new Promise((resolve) => {
-                    exChatsList.push({
-                      _id,
-                      chatId,
-                      isGroup,
-                      groupAdmin,
-                      friends: chatFriendsExList,
-                      chatName: groupName,
-                      chatImage: groupImage,
-                      isMute,
-                      lastMessage: '',
-                      lastMessageTime: '',
-                      unreadCount: 0,
-                    });
                     resolve({
                       _id,
                       chatId,
@@ -223,17 +181,6 @@ User.find()
                     });
                   })
                 );
-              }
-              if (!isGroup) {
-                exChatsList.push({
-                  _id,
-                  chatId,
-                  friends: chatFriendsExList,
-                  isGroup,
-                  chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
-                  chatImage: chatFriends[0].image,
-                  isMute,
-                });
               }
             }
           }
@@ -274,7 +221,6 @@ User.find()
         Promise.all(chatPromises).then((chatsList) => {
           // eslint-disable-next-line no-console
           console.log(`Got user chat and messages list user - ${index}`);
-          user.exChatsList = exChatsList;
           user.chats = chatsList;
           user.messages = userMessages;
           user.loadedChats = chatLimit;
@@ -307,7 +253,6 @@ User.find()
           // eslint-disable-next-line no-console
           console.log(`Got all user friend list user - ${index}`);
           user.pendingFriendRequests = pendingFriendRequestsList;
-          user.dontDisturb = [];
           users.set(userId, user);
         })
       );
