@@ -52,22 +52,23 @@ class AvlTree {
         }
       }
       while (ascending) {
+        const rightHeight = currentNode.right ? currentNode.right.height : 0;
+        const leftHeight = currentNode.left ? currentNode.left.height : 0;
+        if (!currentNode.left || rightHeight > leftHeight) {
+          currentNode.height = rightHeight + 1;
+        }
+        if (!currentNode.right || rightHeight < leftHeight) {
+          currentNode.height = leftHeight + 1;
+        }
+        currentNode.balance();
         if (currentNode.parent) {
-          const rightHeight = currentNode.parent.right ? currentNode.parent.right.height : 0;
-          const leftHeight = currentNode.parent.left ? currentNode.parent.left.height : 0;
           currentNode = currentNode.parent;
-          currentNode.balance();
-          if (!currentNode.left || rightHeight > leftHeight) {
-            currentNode.height = rightHeight + 1;
-          }
-          if (!currentNode.right || rightHeight < leftHeight) {
-            currentNode.height = leftHeight + 1;
-          }
         } else {
           ascending = false;
         }
       }
       if (modifiedSize) {
+        currentNode.balance();
         this.size += 1;
       }
     }
@@ -83,14 +84,14 @@ class AvlTree {
     while (searching) {
       if (currentNode._id === _id) {
         searching = false;
-      }
-      if (currentNode._id > _id) {
+      } else if (currentNode._id > _id) {
         if (currentNode.left) {
           currentNode = currentNode.left;
         }
-      }
-      if (currentNode.right) {
+      } else if (currentNode.right) {
         currentNode = currentNode.right;
+      } else {
+        return null;
       }
     }
     if (find) {
