@@ -142,7 +142,10 @@ module.exports.logout = (req, res, next) => {
     .then(() => {
       const currentUser = users.get(_id, { destruct: false });
       const currentSocket = webSocketClients.get(_id, { destruct: false });
-      currentUser.isOnline = false;
+      currentUser.isOnline = {
+        online: false,
+        time: Date.now(),
+      };
       currentSocket.terminate();
       webSocketClients.delete(_id);
       res.cookie('authorization', '', {

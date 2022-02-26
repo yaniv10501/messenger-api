@@ -45,10 +45,21 @@ class DoubledBlanacedNode extends DoubledNode {
     const leftBefore = this.left;
     this._id = this.right._id;
     this.value = this.right.value;
-    this.left = this.right;
+    this.left = this.right
+      ? this.right
+      : new DoubledBlanacedNode(valueBefore._id, valueBefore.value, this);
     this.right = this.right.right;
-    this.left.right = this.left.left;
+    if (this.right) this.right.parent = this;
+    if (this.left.left) {
+      this.left.right = this.left.left;
+      this.left.left.parent = this.left;
+    } else {
+      this.left.right = null;
+    }
     this.left.left = leftBefore;
+    if (this.left.left) {
+      this.left.left.parent = this.left;
+    }
     this.left.value = valueBefore.value;
     this.left._id = valueBefore._id;
     this.left.updateInNewLocation();
@@ -60,10 +71,21 @@ class DoubledBlanacedNode extends DoubledNode {
     const rightBefore = this.right;
     this._id = this.left._id;
     this.value = this.left.value;
-    this.right = this.left;
+    this.right = this.left
+      ? this.left
+      : new DoubledBlanacedNode(valueBefore._id, valueBefore.value, this);
     this.left = this.left.left;
-    this.right.left = this.right.right;
+    if (this.left) this.left.parent = this;
+    if (this.right.right) {
+      this.right.left = this.right.right;
+      this.right.left.parent = this.right;
+    } else {
+      this.right.left = null;
+    }
     this.right.right = rightBefore;
+    if (this.right.right) {
+      this.right.right.parent = this.right;
+    }
     this.right.value = valueBefore.value;
     this.right._id = valueBefore._id;
     this.right.updateInNewLocation();
@@ -81,10 +103,10 @@ class DoubledBlanacedNode extends DoubledNode {
   }
 
   serialize() {
-    const ans = { _id: this._id, value: this.value };
+    const ans = { _id: this._id };
     ans.left = this.left === null ? null : this.left.serialize();
     ans.right = this.right === null ? null : this.right.serialize();
-    ans.height = this.height;
+    ans.parent = this.parent;
     return ans;
   }
 }

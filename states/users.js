@@ -26,6 +26,7 @@ User.find()
       console.log(`Getting user info user - ${index}`);
       const {
         _id: mongoUserId,
+        userName,
         firstName,
         lastName,
         email,
@@ -41,6 +42,7 @@ User.find()
       } = registerdUser;
       const userId = mongoUserId.toString();
       const user = {
+        userName,
         firstName,
         lastName,
         email,
@@ -253,6 +255,10 @@ User.find()
           // eslint-disable-next-line no-console
           console.log(`Got all user friend list user - ${index}`);
           user.pendingFriendRequests = pendingFriendRequestsList;
+          user.isOnline = {
+            online: false,
+            time: null,
+          };
           users.set(userId, user);
         })
       );

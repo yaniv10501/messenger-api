@@ -118,6 +118,7 @@ class AvlTree {
       return null;
     }
     if (deletedNode.height === 1) {
+      console.log(1);
       let currentNode = deletedNode.parent;
       let ascending;
       deletedNode.value = null;
@@ -127,6 +128,10 @@ class AvlTree {
       if (!currentNode) {
         ascending = false;
         this.root = null;
+      } else if (currentNode.left && currentNode.left._id === null) {
+        currentNode.left = null;
+      } else {
+        currentNode.right = null;
       }
       while (ascending) {
         const rightHeight = currentNode.right ? currentNode.right.height : 0;
@@ -146,6 +151,7 @@ class AvlTree {
       }
     }
     if (deletedNode.height === 2) {
+      console.log(2);
       let currentNode = deletedNode;
       let ascending;
       if (deletedNode.right) {
@@ -183,6 +189,7 @@ class AvlTree {
       }
     }
     if (deletedNode.height > 2) {
+      console.log(3);
       if (deletedNode.right) {
         let currentNode = deletedNode.right;
         let searching = true;
@@ -193,11 +200,12 @@ class AvlTree {
           } else {
             deletedNode.value = currentNode.value;
             deletedNode._id = currentNode._id;
-            currentNode.value = null;
-            currentNode._id = null;
-            currentNode.parent.left = null;
-            currentNode.parent = null;
-            currentNode.height = 0;
+            currentNode = currentNode.parent;
+            currentNode.left.value = null;
+            currentNode.left._id = null;
+            currentNode.left.parent = null;
+            currentNode.left.height = 0;
+            currentNode.left = null;
             searching = false;
           }
         }
@@ -227,10 +235,12 @@ class AvlTree {
           } else {
             deletedNode.value = currentNode.value;
             deletedNode._id = currentNode._id;
-            currentNode.value = null;
-            currentNode._id = null;
-            currentNode.parent.right = null;
-            currentNode.parent = null;
+            currentNode = currentNode.parent;
+            currentNode.right.value = null;
+            currentNode.right._id = null;
+            currentNode.right.parent = null;
+            currentNode.right.height = 0;
+            currentNode.right = null;
             searching = false;
           }
         }
@@ -256,6 +266,19 @@ class AvlTree {
     return this;
   }
 
+  check(property, value) {
+    if (!this.root) {
+      return null;
+    }
+    const queue = [this.root];
+    const result = this.breadthFirstTraverse(queue, [], false, [], null, {
+      check: true,
+      property,
+      value,
+    });
+    return result;
+  }
+
   getList(start, forbiddenList) {
     if (!this.root) {
       return null;
@@ -276,10 +299,12 @@ class AvlTree {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  breadthFirstTraverse(queue, array, start, forbiddenList, callback) {
+  breadthFirstTraverse(queue, array, start, forbiddenList, callback, options) {
     if (queue.length < 0) return array;
 
+    const { check = false, property = null, value = null } = options || {};
     let i = 0;
+    let result;
     while (queue.length > 0) {
       if (start && start > i) {
         const node = queue.shift();
@@ -288,25 +313,38 @@ class AvlTree {
         i += 1;
       } else {
         const node = queue.shift();
-        const isForbidden = forbiddenList.some((forbiddenItem) => forbiddenItem._id === node._id);
-        if (isForbidden) {
+        if (check) {
+          // console.log(property, value, node.value[property]);
           if (node.left) queue.push(node.left);
           if (node.right) queue.push(node.right);
-        } else {
-          if (callback) {
-            callback(node.value, node._id);
-          }
-          if (!callback) {
-            array.push({ _id: node._id, ...node.value });
-          }
-          if (node.left) queue.push(node.left);
-          if (node.right) queue.push(node.right);
-          i += 1;
-          if (start && i >= start + 20) {
+          if (node.value[property] === value) {
             queue.splice(0);
+            result = true;
+          }
+        } else {
+          const isForbidden = forbiddenList.some((forbiddenItem) => forbiddenItem._id === node._id);
+          if (isForbidden) {
+            if (node.left) queue.push(node.left);
+            if (node.right) queue.push(node.right);
+          } else {
+            if (callback) {
+              callback(node.value, node._id);
+            }
+            if (!callback) {
+              array.push({ _id: node._id, ...node.value });
+            }
+            if (node.left) queue.push(node.left);
+            if (node.right) queue.push(node.right);
+            i += 1;
+            if (start && i >= start + 20) {
+              queue.splice(0);
+            }
           }
         }
       }
+    }
+    if (check) {
+      return result || false;
     }
 
     return array;
@@ -317,7 +355,10 @@ class AvlTree {
   }
 
   toObject() {
-    return this.root.serialize();
+    if (!this.root) {
+      return null;
+    }
+    return this.root.serialize(this.size);
   }
 }
 

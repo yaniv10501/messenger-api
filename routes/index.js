@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { validateUserSchema, validateLoginSchema } = require('../utils/joi');
 const {
+  checkUserTaken,
   getUserMe,
   createUser,
   addFriend,
@@ -34,6 +35,8 @@ const {
   leaveChat,
   leaveChats,
 } = require('../controllers/messages');
+
+router.post('/api/users/name/check', checkUserTaken);
 
 router.post('/api/signup', validateUserSchema, createUser);
 

@@ -40,19 +40,10 @@ module.exports.getMessages = async (req, res, next) => {
     const { chatId } = req.params;
     try {
       const messages = getUserChatMessages(_id, chatId);
-      const { loadedAll } = messages;
-      if (loadedAll) {
-        res.json({
-          _id: chatId,
-          ...messages,
-        });
-      }
-      if (!loadedAll) {
-        res.json({
-          _id: chatId,
-          messages,
-        });
-      }
+      res.json({
+        _id: chatId,
+        ...messages,
+      });
     } catch (error) {
       res.json({
         _id: chatId,

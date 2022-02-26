@@ -38,12 +38,13 @@ const { checkFilePathExists } = require('../utils/fs');
 
 module.exports.createUser = (req, res, next) => {
   try {
-    const { firstName, lastName, gender, birthday, email, password } = req.body;
+    const { userName, firstName, lastName, gender, birthday, email, password } = req.body;
     const emptyGroupId = uuidv4();
     bcrypt
       .hash(password, 10)
       .then((hash) =>
         User.create({
+          userName,
           firstName,
           lastName,
           gender,
@@ -61,6 +62,7 @@ module.exports.createUser = (req, res, next) => {
           .then((newUser) => {
             const _id = newUser._id.toString();
             setNewUser(_id, {
+              userName,
               firstName,
               lastName,
               gender,
@@ -75,6 +77,7 @@ module.exports.createUser = (req, res, next) => {
             newUserState.messages = new Map();
             newUserState.loadedChats = 0;
             newUserState.chatsCount = 0;
+            newUserState.friends = [];
             newUserState.friendRequests = [];
             newUserState.pendingFriendRequests = [];
             newUserState.queue = [];
@@ -98,6 +101,7 @@ module.exports.createUser = (req, res, next) => {
               message: 'A new user has been created',
               user: {
                 name: newUser.firstName,
+                userName: newUser.userName,
                 email: newUser.email,
               },
             });
@@ -484,6 +488,17 @@ module.exports.resetChatUnread = (req, res, next) => {
     const { chatId } = req.params;
     resetUserChatUnread(_id, chatId);
     res.json({ message: `Chat - ${chatId} unread count is now 0` });
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.checkUserTaken = (req, res, next) => {
+  try {
+    const { userName } = req.body;
+    console.log(userName, req.body);
+    const isTaken = users.check('userName', userName);
+    res.json({ isTaken });
   } catch (error) {
     checkErrors(error, next);
   }

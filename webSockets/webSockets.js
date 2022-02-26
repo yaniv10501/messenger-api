@@ -37,7 +37,10 @@ module.exports.initWebSocket = (server) => {
       users.set(
         _id,
         {
-          isOnline: true,
+          isOnline: {
+            online: true,
+            time: null,
+          },
         },
         {
           isNew: false,
@@ -68,7 +71,10 @@ module.exports.initWebSocket = (server) => {
           users.set(
             _id,
             {
-              isOnline: false,
+              isOnline: {
+                online: false,
+                time: Date.now(),
+              },
             },
             {
               isNew: false,
