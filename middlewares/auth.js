@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const Tokens = require('../models/token');
+const { setNewTokens, updateRefreshToken } = require('../utils/bulkUpdates');
 const checkErrors = require('../utils/checkErrors');
 const AuthorizationError = require('../utils/errors/AuthorizationError');
 
@@ -72,74 +73,13 @@ module.exports = async (req, res, next) => {
                   expiresIn: '7d',
                 }
               );
-              const bulkUpdate = [
-                {
-                  updateOne: {
-                    filter: {
-                      userId,
-                    },
-                    update: {
-                      $pull: {
-                        wsAuthTokens: {
-                          token: oldWsToken,
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  updateOne: {
-                    filter: { userId },
-                    update: {
-                      $pull: {
-                        refreshTokens: {
-                          token: refreshToken,
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  updateOne: {
-                    filter: {
-                      userId,
-                    },
-                    update: {
-                      $addToSet: {
-                        wsAuthTokens: {
-                          token: newWsToken,
-                          expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-                        },
-                        usedWsTokens: oldWsToken,
-                        refreshTokens: {
-                          token: newRefreshToken,
-                          expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-                        },
-                        usedTokens: refreshToken,
-                      },
-                    },
-                  },
-                },
-                {
-                  updateOne: {
-                    filter: {
-                      userId,
-                    },
-                    update: {
-                      $push: {
-                        usedTokens: {
-                          $each: [],
-                          $slice: -5,
-                        },
-                        usedWsTokens: {
-                          $each: [],
-                          $slice: -5,
-                        },
-                      },
-                    },
-                  },
-                },
-              ];
+              const bulkUpdate = setNewTokens(
+                userId,
+                oldWsToken,
+                refreshToken,
+                newWsToken,
+                newRefreshToken
+              );
               await Tokens.bulkWrite(bulkUpdate);
               currentRefreshToken = newRefreshJwt;
               res.cookie('wsAuth', `${newWsJwt}`, {
@@ -191,43 +131,7 @@ module.exports = async (req, res, next) => {
                   expiresIn: '7d',
                 }
               );
-              const bulkUpdate = [
-                {
-                  updateOne: {
-                    filter: { userId },
-                    update: {
-                      $pull: { refreshTokens: { token: refreshToken } },
-                    },
-                  },
-                },
-                {
-                  updateOne: {
-                    filter: { userId },
-                    update: {
-                      $addToSet: {
-                        refreshTokens: {
-                          token: newRefreshToken,
-                          expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-                        },
-                        usedTokens: refreshToken,
-                      },
-                    },
-                  },
-                },
-                {
-                  updateOne: {
-                    filter: { userId },
-                    update: {
-                      $push: {
-                        usedTokens: {
-                          $each: [],
-                          $slice: -5,
-                        },
-                      },
-                    },
-                  },
-                },
-              ];
+              const bulkUpdate = updateRefreshToken(userId, refreshToken, newRefreshToken);
               await Tokens.bulkWrite(bulkUpdate);
               res.cookie('authorization', `Bearer ${newToken}`, {
                 maxAge: 1000 * 60 * 15,
