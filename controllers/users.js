@@ -33,7 +33,6 @@ const {
   getUserPendingFriendRequests,
 } = require('../lib/friendRequests');
 const users = require('../states/users');
-const sortUsersArray = require('../utils/sortUsersArray');
 const { checkFilePathExists } = require('../utils/fs');
 
 /**
@@ -68,6 +67,7 @@ module.exports.createUser = (req, res, next) => {
         })
           .then((newUser) => {
             const _id = newUser._id.toString();
+            const newEmptyGroup = newUser.chats[0];
             setNewUser(_id, {
               userName,
               firstName,
@@ -76,34 +76,18 @@ module.exports.createUser = (req, res, next) => {
               birthday,
               email,
               image: '',
+              emptyGroup: newEmptyGroup,
+              chats: [],
+              messages: new Map(),
+              loadedChats: 0,
+              chatsCount: 0,
+              friends: [],
+              moreFirends: [],
+              friendRequests: [],
+              pendingFriendRequests: [],
+              dontDisturb: [],
+              queue: [],
             });
-            const newEmptyGroup = newUser.chats[0];
-            const newUserState = users.get(_id);
-            newUserState.emptyGroup = newEmptyGroup;
-            newUserState.chats = [];
-            newUserState.messages = new Map();
-            newUserState.loadedChats = 0;
-            newUserState.chatsCount = 0;
-            newUserState.friends = [];
-            newUserState.friendRequests = [];
-            newUserState.pendingFriendRequests = [];
-            newUserState.queue = [];
-            User.find({ _id: { $nin: [_id] } })
-              .then((othersResult) => {
-                const sortedOthersList = sortUsersArray(othersResult);
-                const moreFriendsList = sortedOthersList.map((otherUser) => {
-                  const otherUserId = uuidv4();
-                  return {
-                    otherUserId,
-                    _id: otherUser._id.toString(),
-                  };
-                });
-                newUserState.moreFriends = moreFriendsList;
-              })
-              .catch((error) => {
-                // eslint-disable-next-line no-console
-                console.log(error);
-              });
             res.status(201).json({
               message: 'A new user has been created',
               user: {

@@ -59,6 +59,7 @@ User.find()
       // eslint-disable-next-line no-console
       console.log(`Got user info user - ${index}`);
       const friendList = [];
+      const composeList = [];
       for (let i = 0; i < 20; i += 1) {
         const friend = friends[i];
         if (friend) {
@@ -164,6 +165,15 @@ User.find()
               });
               if (!isGroup) {
                 chatLimit += 1;
+                composeList.push({
+                  _id,
+                  chatId,
+                  friends: chatFriendslist,
+                  isGroup,
+                  chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
+                  chatImage: chatFriends[0].image,
+                  isMute,
+                });
               }
               if (isGroup) {
                 chatPromises.push(
@@ -259,6 +269,7 @@ User.find()
             online: false,
             time: null,
           };
+          user.composeList = composeList;
           users.set(userId, user);
         })
       );

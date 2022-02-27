@@ -68,13 +68,14 @@ const urlMethod = (value, helpers) => {
 };
 
 const userSchema = Joi.object({
+  userName: Joi.string().custom(stringMethod).max(30).required(),
   firstName: Joi.string().custom(nameMethod).max(30).required(),
   lastName: Joi.string().custom(nameMethod).max(30).required(),
   gender: Joi.string().custom(stringMethod).required(),
   birthday: Joi.string().custom(stringMethod).required(),
   email: Joi.string().custom(emailMethod).required(),
   password: Joi.string().custom(passwordMethod).required(),
-}).unknown();
+});
 
 module.exports.validateUserSchema = (req, res, next) => {
   const { error } = userSchema.validate(req.body);

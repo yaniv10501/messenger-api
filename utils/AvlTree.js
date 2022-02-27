@@ -281,7 +281,7 @@ class AvlTree {
 
   getList(start, forbiddenList) {
     if (!this.root) {
-      return null;
+      return [];
     }
     const queue = [];
     const list = [];
