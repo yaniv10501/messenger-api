@@ -35,6 +35,12 @@ const {
   leaveChat,
   leaveChats,
 } = require('../controllers/messages');
+const {
+  setNewNotif,
+  setNotifSeen,
+  deleteNotif,
+  getNotifications,
+} = require('../controllers/notifications');
 
 router.post('/api/users/name/check', checkUserTaken);
 
@@ -97,6 +103,14 @@ router.get('/api/friends/more', getMoreFriends);
 router.post('/api/type/:chatId', setUserTyping);
 
 router.post('/api/message/:chatId', sendMessage);
+
+router.get('/api/notifications', getNotifications);
+
+router.post('/api/notifications/new', setNewNotif);
+
+router.post('/api/notifications/seen/:notifId', setNotifSeen);
+
+router.delete('/api/notifications/delete/:notifId', deleteNotif);
 
 router.post('/api/signout', logout);
 

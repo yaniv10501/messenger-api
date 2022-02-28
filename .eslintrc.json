@@ -17,5 +17,13 @@
           "allow": ["_id", "_find"]
         }
       ]
-    }
+    },
+    "overrides": [
+      {
+        "files": ["tests/*.js"],
+        "rules": {
+          "no-undef": "off"
+        }
+      }
+    ]
   }

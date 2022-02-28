@@ -2,6 +2,36 @@ const mongoose = require('mongoose');
 const { isEmail } = require('validator');
 const { testUrl } = require('../utils/regex');
 
+const notificationsSchema = new mongoose.Schema({
+  notifId: {
+    type: String,
+    required: true,
+  },
+  notifType: {
+    type: String,
+    required: true,
+  },
+  isSeen: {
+    type: Boolean,
+    default: false,
+  },
+  otherUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: false,
+  },
+  /** Id of the notification action (chat, request) */
+  actionId: {
+    type: String,
+    required: false,
+  },
+  /** Id for the notification utility (message ...) */
+  utilId: {
+    type: String,
+    required: false,
+  },
+});
+
 const friendRequestSchema = new mongoose.Schema({
   friend: {
     type: mongoose.Schema.Types.ObjectId,
@@ -169,7 +199,16 @@ const userSchema = new mongoose.Schema({
       default: [],
     },
   ],
-  dontDisturb: [{ type: String, default: [] }],
+  dontDisturb: [
+    {
+      type: String,
+      default: [],
+    },
+  ],
+  notifications: {
+    type: [notificationsSchema],
+    select: false,
+  },
 });
 
 module.exports = mongoose.model('user', userSchema);

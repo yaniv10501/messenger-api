@@ -79,6 +79,7 @@ module.exports.createUser = (req, res, next) => {
               friendRequests: [],
               pendingFriendRequests: [],
               dontDisturb: [],
+              notifications: [],
               queue: [],
             });
             res.status(201).json({

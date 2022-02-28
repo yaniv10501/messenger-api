@@ -13,7 +13,7 @@ module.exports.sendMessage = async (req, res, next) => {
   try {
     const { _id } = req.user;
     const { chatId } = req.params;
-    const { messageId } = uuidv4();
+    const messageId = uuidv4();
     const { message, isMute: isChatdMute, friends, isGroup } = req.body;
     const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate } = getTime();
     const newMessage = {

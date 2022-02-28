@@ -1,7 +1,6 @@
-/* eslint-disable no-undef */
 const AvlTree = require('../utils/AvlTree');
 
-describe('AVL Tree height 1', () => {
+describe.skip('AVL Tree height 1', () => {
   it('Create and modify a tree', () => {
     const tree = new AvlTree();
     tree.set(0, 0);
@@ -20,7 +19,7 @@ describe('AVL Tree height 1', () => {
   });
 });
 
-describe('AVL Tree height 2', () => {
+describe.skip('AVL Tree height 2', () => {
   it('Create and modify a tree', () => {
     const nums = Array.from(Array(3).keys());
     const tree = new AvlTree();
@@ -73,7 +72,7 @@ describe('AVL Tree height 2', () => {
   });
 });
 
-describe('AVL Tree height 3', () => {
+describe.skip('AVL Tree height 3', () => {
   it('Create and modify a tree', () => {
     const nums = Array.from(Array(7).keys());
     const tree = new AvlTree();
@@ -123,7 +122,7 @@ describe('AVL Tree height 3', () => {
   });
 });
 
-describe('AVL Tree check', () => {
+describe.skip('AVL Tree check', () => {
   it('Checks if value exist in tree', () => {
     const tree = new AvlTree();
     for (let i = 0; i < 10; i += 1) {
