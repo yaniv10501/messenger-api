@@ -35,13 +35,6 @@ const {
 const users = require('../states/users');
 const { checkFilePathExists } = require('../utils/fs');
 
-/**
- * @function createUser
- * @param {*} req - Request
- * @param {*} res - Response
- * @param {*} next - Next
- */
-
 module.exports.createUser = (req, res, next) => {
   try {
     const { userName, firstName, lastName, gender, birthday, email, password } = req.body;

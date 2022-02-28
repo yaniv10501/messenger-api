@@ -270,6 +270,7 @@ User.find()
             time: null,
           };
           user.composeList = composeList;
+          user.notifications = [];
           users.set(userId, user);
         })
       );

@@ -22,7 +22,7 @@ class AvlTree {
           if (isNew) {
             currentNode.value = value;
           } else if (isFunction(value)) {
-            currentNode.value = value(currentNode.value);
+            currentNode.value = value(currentNode.value, currentNode._id);
           } else {
             currentNode.value = {
               ...currentNode.value,
