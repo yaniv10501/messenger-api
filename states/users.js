@@ -16,6 +16,8 @@ User.find()
     'pendingFriendRequests',
     'pendingFriendRequests.friend',
     'blockedUsers',
+    'dontDisturb',
+    'notifications',
   ])
   .then(async (currentRegisteredUsers) => {
     // eslint-disable-next-line no-console
@@ -39,6 +41,7 @@ User.find()
         pendingFriendRequests,
         blockedUsers,
         dontDisturb,
+        notifications,
       } = registerdUser;
       const userId = mongoUserId.toString();
       const user = {
@@ -55,6 +58,7 @@ User.find()
         blockedUsers,
         dontDisturb,
         chatsCount: chats.length,
+        notifications,
       };
       // eslint-disable-next-line no-console
       console.log(`Got user info user - ${index}`);
@@ -270,7 +274,6 @@ User.find()
             time: null,
           };
           user.composeList = composeList;
-          user.notifications = [];
           users.set(userId, user);
         })
       );

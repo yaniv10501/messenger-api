@@ -34,6 +34,7 @@ const {
 } = require('../lib/friendRequests');
 const users = require('../states/users');
 const { checkFilePathExists } = require('../utils/fs');
+const { NEW_MESSAGE } = require('../assets/notificationsTypes');
 
 module.exports.createUser = (req, res, next) => {
   try {
@@ -196,7 +197,7 @@ module.exports.getUserMe = (req, res, next) => {
   try {
     const { _id } = req.user;
     const currentUser = users.get(_id);
-    const { firstName, lastName, email, image, messages, dontDisturb } = currentUser;
+    const { firstName, lastName, email, image, messages, dontDisturb, notifications } = currentUser;
     User.findOne({ _id })
       .select(['chats'])
       .then(({ chats }) => {
@@ -214,7 +215,36 @@ module.exports.getUserMe = (req, res, next) => {
         }
         currentUser.loadedChats = chatLimit;
       });
-    res.json({ name: `${firstName} ${lastName}`, email, image, dontDisturb });
+    const notifList = notifications.map((notif) => {
+      console.log(notif);
+      const {
+        firstName: friendFirstName,
+        lastName: friendLastName,
+        image: friendImage,
+      } = users.get(notif.otherUser.toString());
+      if (notif.notifType === NEW_MESSAGE) {
+        return {
+          type: NEW_MESSAGE,
+          chatId: notif.actionId,
+          user: {
+            firstName: friendFirstName,
+            lastName: friendLastName,
+            image: friendImage,
+          },
+          message: notif.message,
+        };
+      }
+      return null;
+    });
+    res.json({
+      user: {
+        name: `${firstName} ${lastName}`,
+        email,
+        image,
+        dontDisturb,
+      },
+      notifications: notifList,
+    });
   } catch (error) {
     checkErrors(error, next);
   }

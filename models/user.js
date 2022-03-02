@@ -25,10 +25,15 @@ const notificationsSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  /** Id for the notification utility (message ...) */
-  utilId: {
-    type: String,
-    required: false,
+  message: {
+    messageContent: {
+      type: String,
+      required: false,
+    },
+    messageTime: {
+      type: String,
+      required: false,
+    },
   },
 });
 

@@ -5,6 +5,7 @@ const {
   deleteUserNotif,
   getUserNotifications,
 } = require('../lib/notifications');
+const users = require('../states/users');
 const checkErrors = require('../utils/checkErrors');
 
 module.exports.setNewNotif = (req, res, next) => {
@@ -48,12 +49,41 @@ module.exports.getNotifications = (req, res, next) => {
     if (notifList instanceof Promise) {
       getUserNotifications(_id, start).then((userNotifList) => {
         const notifications = userNotifList.map((notif) => {
-          if (notif.notifType === NEW_MESSAGE)
-        })
-        res.json(userNotifList);
+          const { firstName, lastName, image } = users.get(notif.otherUser);
+          if (notif.notifType === NEW_MESSAGE) {
+            return {
+              type: notif.notifType,
+              chatId: notif.actionId,
+              user: {
+                firstName,
+                lastName,
+                image,
+              },
+              message: notif.message,
+            };
+          }
+          return null;
+        });
+        res.json(notifications);
       });
     } else {
-      res.json(notifList);
+      const notifications = notifList.map((notif) => {
+        const { firstName, lastName, image } = users.get(notif.otherUser);
+        if (notif.notifType === NEW_MESSAGE) {
+          return {
+            type: notif.notifType,
+            chatId: notif.actionId,
+            user: {
+              firstName,
+              lastName,
+              image,
+            },
+            message: notif.message,
+          };
+        }
+        return null;
+      });
+      res.json(notifications);
     }
   } catch (error) {
     checkErrors(error, next);
