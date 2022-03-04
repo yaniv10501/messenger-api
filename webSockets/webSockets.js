@@ -47,6 +47,7 @@ module.exports.initWebSocket = (server) => {
         }
       );
       ws.isAlive = true;
+      ws.on('message', (message) => console.log(message.toJSON(), _id));
       ws.on('pong', () => {
         // eslint-disable-next-line no-console
         console.log(`UserId - ${_id} has ponged back`);
