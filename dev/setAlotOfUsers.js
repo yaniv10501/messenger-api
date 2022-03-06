@@ -27,7 +27,7 @@ for (let i = 0; i < 5000; i += 1) {
   });
   const tempUserMessages = [];
   const tempFriendMessages = [];
-  const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate } = getTime();
+  const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate, dateNow } = getTime();
   for (let userI = 0; userI < 500; userI += 1) {
     const messageId = uuidv4();
     const newMessage = {
@@ -35,6 +35,7 @@ for (let i = 0; i < 5000; i += 1) {
       messageTime,
       messageDay,
       messageDate,
+      dateNow,
       messageContent: `message${userI}`,
       unreed: false,
       messageByUser: true,

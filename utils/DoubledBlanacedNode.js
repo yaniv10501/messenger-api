@@ -8,13 +8,6 @@ class DoubledBlanacedNode extends DoubledNode {
     this.parent = parent;
   }
 
-  /**
-   * @method find - Find a value by the id of the node.
-   * @param {String} _id - The id of the node to be found.
-   * @param {Boolean} options.destruct - Should the value be destructed for return, defualt to true.
-   * @returns The found value
-   */
-
   balance() {
     const rightHeight = this.right ? this.right.height : 0;
     const leftHeight = this.left ? this.left.height : 0;

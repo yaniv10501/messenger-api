@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const users = require('../states/users');
 const { objectifyCookie } = require('../utils/cookie');
 const AvlTree = require('../utils/AvlTree');
+const { NEW_MESSAGE } = require('../assets/notificationsTypes');
+const { deleteUserNotif } = require('../lib/notifications');
 
 const wsServer = new WebSocket.WebSocketServer({ noServer: true });
 
@@ -47,7 +49,17 @@ module.exports.initWebSocket = (server) => {
         }
       );
       ws.isAlive = true;
-      ws.on('message', (message) => console.log(message.toJSON(), _id));
+      ws.on('message', (message) => {
+        const parsedMessage = JSON.parse(message);
+        const { message: type } = parsedMessage;
+        if (type === NEW_MESSAGE) {
+          const { chats, notifId } = parsedMessage;
+          if (chats) {
+            deleteUserNotif(_id, notifId);
+          }
+        }
+        console.log(parsedMessage);
+      });
       ws.on('pong', () => {
         // eslint-disable-next-line no-console
         console.log(`UserId - ${_id} has ponged back`);

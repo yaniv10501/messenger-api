@@ -224,6 +224,7 @@ module.exports.getUserMe = (req, res, next) => {
       } = users.get(notif.otherUser.toString());
       if (notif.notifType === NEW_MESSAGE) {
         return {
+          _id: notif.notifId,
           type: NEW_MESSAGE,
           chatId: notif.actionId,
           user: {
@@ -232,6 +233,7 @@ module.exports.getUserMe = (req, res, next) => {
             image: friendImage,
           },
           message: notif.message,
+          isSeen: notif.isSeen,
         };
       }
       return null;
@@ -514,6 +516,46 @@ module.exports.checkUserTaken = (req, res, next) => {
     console.log(userName, req.body);
     const isTaken = users.check('userName', userName);
     res.json({ isTaken });
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.findOtherUsers = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { userQuery } = req.query;
+    const moreFriendsList = [];
+    const moreFriendsState = [];
+    const otherUsersList = users.findList(_id, userQuery);
+    for (let i = 0; i < 20; i += 1) {
+      const currentOtherUser = otherUsersList[i];
+      if (!currentOtherUser) {
+        i = 20;
+      }
+      if (currentOtherUser) {
+        const { firstName, lastName, gender, birthday, image } = currentOtherUser;
+        const newOtherUserId = uuidv4();
+        moreFriendsList.push({
+          _id: newOtherUserId,
+          firstName,
+          lastName,
+          gender,
+          birthday,
+          image,
+        });
+        moreFriendsState.push({
+          _id: currentOtherUser._id,
+          otherUserId: newOtherUserId,
+          firstName,
+          lastName,
+          gender,
+          birthday,
+          image,
+        });
+      }
+    }
+    res.json(moreFriendsList);
   } catch (error) {
     checkErrors(error, next);
   }
