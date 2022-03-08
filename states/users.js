@@ -52,13 +52,9 @@ User.find()
         gender,
         birthday,
         image,
-        chats,
-        friendRequests,
-        pendingFriendRequests,
         blockedUsers,
         dontDisturb,
         chatsCount: chats.length,
-        notifications,
       };
       // eslint-disable-next-line no-console
       console.log(`Got user info user - ${index}`);
@@ -121,7 +117,14 @@ User.find()
                       loadedAll,
                     });
                     const lastChatMessage = messages[0];
-                    const { messageTime, messageDay, messageDate, dateNow } = lastChatMessage;
+                    const {
+                      messageTime,
+                      messageDay,
+                      messageDate,
+                      dateNow,
+                      messageByUser,
+                      messageBy,
+                    } = lastChatMessage;
                     const lastMessageTime = setItemTime(
                       messageDate,
                       dateNow,
@@ -139,6 +142,8 @@ User.find()
                         chatImage: groupImage,
                         isMute,
                         lastMessage: lastChatMessage.messageContent,
+                        lastMessageByUser: messageByUser,
+                        lastMessageBy: messageBy,
                         lastMessageTime,
                         unreadCount,
                       };
@@ -152,6 +157,7 @@ User.find()
                       chatImage: chatFriends[0].image,
                       isMute,
                       lastMessage: lastChatMessage.messageContent,
+                      lastMessageByUser: messageByUser,
                       lastMessageTime,
                       unreadCount,
                     };
@@ -274,6 +280,16 @@ User.find()
             time: null,
           };
           user.composeList = composeList;
+          user.notifications = notifications.map(
+            ({ notifId, notifType, isSeen, otherUser, actionId, message }) => ({
+              notifId,
+              notifType,
+              isSeen,
+              otherUser,
+              actionId,
+              message,
+            })
+          );
           users.set(userId, user);
         })
       );

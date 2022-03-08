@@ -4,6 +4,7 @@ const {
   setUserNotifSeen,
   deleteUserNotif,
   getUserNotifications,
+  deleteUserNotifType,
 } = require('../lib/notifications');
 const users = require('../states/users');
 const checkErrors = require('../utils/checkErrors');
@@ -22,7 +23,7 @@ module.exports.setNewNotif = (req, res, next) => {
 module.exports.setNotifSeen = (req, res, next) => {
   try {
     const { _id } = req.user;
-    const { notificationId } = req.body;
+    const { notificationId } = req.params;
     setUserNotifSeen(_id, notificationId);
     res.json({ message: 'Notification has been set to seen' });
   } catch (error) {
@@ -33,9 +34,25 @@ module.exports.setNotifSeen = (req, res, next) => {
 module.exports.deleteNotif = (req, res, next) => {
   try {
     const { _id } = req.user;
-    const { notificationId } = req.body;
+    const { notificationId } = req.params;
     deleteUserNotif(_id, notificationId);
     res.json({ message: 'Notification has been deleted' });
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.deleteNotifType = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { notificationType } = req.params;
+    deleteUserNotifType(_id, notificationType)
+      .then((notifications) => {
+        res.json(notifications);
+      })
+      .catch((error) => {
+        throw error;
+      });
   } catch (error) {
     checkErrors(error, next);
   }
@@ -52,6 +69,7 @@ module.exports.getNotifications = (req, res, next) => {
           const { firstName, lastName, image } = users.get(notif.otherUser);
           if (notif.notifType === NEW_MESSAGE) {
             return {
+              _id: notif.notifId,
               type: notif.notifType,
               chatId: notif.actionId,
               user: {
@@ -60,6 +78,7 @@ module.exports.getNotifications = (req, res, next) => {
                 image,
               },
               message: notif.message,
+              isSeen: notif.isSeen,
             };
           }
           return null;
@@ -71,6 +90,7 @@ module.exports.getNotifications = (req, res, next) => {
         const { firstName, lastName, image } = users.get(notif.otherUser);
         if (notif.notifType === NEW_MESSAGE) {
           return {
+            _id: notif.notifId,
             type: notif.notifType,
             chatId: notif.actionId,
             user: {
@@ -79,6 +99,7 @@ module.exports.getNotifications = (req, res, next) => {
               image,
             },
             message: notif.message,
+            isSeen: notif.isSeen,
           };
         }
         return null;

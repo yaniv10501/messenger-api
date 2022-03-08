@@ -289,6 +289,16 @@ class AvlTree {
     return this.breadthFirstTraverse(queue, list, start || 0, forbiddenList);
   }
 
+  findList(_id, query) {
+    if (!this.root) {
+      return null;
+    }
+    const queue = [];
+    const list = [];
+    queue.push(this.root);
+    return this.breadthFirstTraverse(queue, list, false, [{ _id }], null, { find: true, query });
+  }
+
   forEach(callback) {
     if (!this.root) {
       return null;
@@ -302,7 +312,13 @@ class AvlTree {
   breadthFirstTraverse(queue, array, start, forbiddenList, callback, options) {
     if (queue.length < 0) return array;
 
-    const { check = false, property = null, value = null } = options || {};
+    const {
+      check = false,
+      property = null,
+      value = null,
+      find = false,
+      query = null,
+    } = options || {};
     let i = 0;
     let result;
     while (queue.length > 0) {
@@ -331,7 +347,22 @@ class AvlTree {
               callback(node.value, node._id);
             }
             if (!callback) {
-              array.push({ _id: node._id, ...node.value });
+              if (find) {
+                const {
+                  value: { userName, firstName, lastName },
+                } = node;
+                if (userName === query) {
+                  array.unshift({ _id: node._id, ...node.value });
+                } else if (
+                  userName.includes(query) ||
+                  firstName.includes(query) ||
+                  lastName.includes(query)
+                ) {
+                  array.push({ _id: node._id, ...node.value });
+                }
+              } else {
+                array.push({ _id: node._id, ...node.value });
+              }
             }
             if (node.left) queue.push(node.left);
             if (node.right) queue.push(node.right);

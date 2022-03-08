@@ -37,8 +37,17 @@ module.exports.getMessagesStream = async (filePath, options) => {
     stream.pipe(parser);
     const start = toLoad - 49;
     let i = 0;
+    let messageBefore;
     parser.on('data', (obj) => {
       if (i >= start) {
+        if (messageBefore) {
+          if (obj.messageDay !== messageBefore.messageDay) {
+            messages.push({
+              chatTime: obj.messageTime,
+            });
+          }
+        }
+        messageBefore = obj;
         messages.push(obj);
         i += 1;
         if (i > toLoad) {

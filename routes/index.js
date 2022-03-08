@@ -25,6 +25,7 @@ const {
   getMoreGroupFriends,
   setDontDisturbProfile,
   resetChatUnread,
+  findOtherUsers,
 } = require('../controllers/users');
 const { login, logout } = require('../controllers/auth');
 const auth = require('../middlewares/auth');
@@ -40,6 +41,7 @@ const {
   setNotifSeen,
   deleteNotif,
   getNotifications,
+  deleteNotifType,
 } = require('../controllers/notifications');
 
 router.post('/api/users/name/check', checkUserTaken);
@@ -51,6 +53,8 @@ router.post('/api/signin', validateLoginSchema, login);
 router.use(auth);
 
 router.get('/api/users/me', getUserMe);
+
+router.get('/api/users/find', findOtherUsers);
 
 router.get('/api/new/:chatId', getNewChat);
 
@@ -108,9 +112,11 @@ router.get('/api/notifications', getNotifications);
 
 router.post('/api/notifications/new', setNewNotif);
 
-router.post('/api/notifications/seen/:notifId', setNotifSeen);
+router.post('/api/notifications/seen/:notificationId', setNotifSeen);
 
-router.delete('/api/notifications/delete/:notifId', deleteNotif);
+router.delete('/api/notifications/delete/:notificationId', deleteNotif);
+
+router.delete('/api/notifications/delete/type/:notificationType', deleteNotifType);
 
 router.post('/api/signout', logout);
 

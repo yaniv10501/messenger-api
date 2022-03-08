@@ -2,7 +2,7 @@ const User = require('./fakeMongo');
 const { setNewUserNotif, setUserNotifSeen, deleteUserNotif } = require('./notifications');
 const users = require('./fakeUsers');
 
-describe('Add notification test', () => {
+describe.skip('Add notification test', () => {
   it('Create a notification in state and mongo', () => {
     /** Set new user */
     const newUser = {

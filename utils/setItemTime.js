@@ -8,8 +8,10 @@ const setItemTime = (itemDate, itemDateNow, itemDay, itemTime) => {
     if (currentDateNow - itemDateNow > weekMs) {
       return itemDate;
     }
+    console.log(currentDateNow, itemDateNow);
     if (currentDateNow - itemDateNow > dayMs * 2) {
       const currentWeekDay = date.toLocaleDateString('en-GB', { weekday: 'long' });
+      console.log(currentWeekDay, itemDay);
       if (currentWeekDay === itemDay) {
         return itemDate;
       }
