@@ -555,7 +555,17 @@ module.exports.findOtherUsers = (req, res, next) => {
         });
       }
     }
-    res.json(moreFriendsList);
+    users.set(
+      _id,
+      {
+        moreFriends: [...moreFriendsState],
+      },
+      { isNew: false }
+    );
+    res.json({
+      loadedAll: true,
+      moreFriendsList,
+    });
   } catch (error) {
     checkErrors(error, next);
   }
