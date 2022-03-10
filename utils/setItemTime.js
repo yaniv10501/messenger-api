@@ -1,15 +1,15 @@
+const { weekMs, dayMs } = require('../assets/time');
+
 const setItemTime = (itemDate, itemDateNow, itemDay, itemTime) => {
   const date = new Date();
   const currentDate = date.toLocaleDateString('en-GB');
   if (itemDate !== currentDate) {
     const currentDateNow = date.getTime();
-    const dayMs = 1000 * 60 * 60 * 24;
-    const weekMs = dayMs * 7;
     if (currentDateNow - itemDateNow > weekMs) {
       return itemDate;
     }
     console.log(currentDateNow, itemDateNow);
-    if (currentDateNow - itemDateNow > dayMs * 2) {
+    if (currentDateNow - itemDateNow > dayMs) {
       const currentWeekDay = date.toLocaleDateString('en-GB', { weekday: 'long' });
       console.log(currentWeekDay, itemDay);
       if (currentWeekDay === itemDay) {

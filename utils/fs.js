@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const JSONStream = require('JSONStream');
+const setItemTime = require('./setItemTime');
 
 const createJsonReadStream = (filePath) =>
   fs.createReadStream(path.join(__dirname, filePath), { encoding: 'utf8' });
@@ -40,11 +41,16 @@ module.exports.getMessagesStream = async (filePath, options) => {
     let messageBefore;
     parser.on('data', (obj) => {
       if (i >= start) {
+        const { messageDate, messageDay, messageTime, dateNow } = obj;
+        if (!messageBefore && i === 0) {
+          const todayDate = new Date().toLocaleDateString('en-GB');
+          if (messageDate !== todayDate) {
+            messages.push({ chatTime: setItemTime(messageDate, dateNow, messageDay, messageTime) });
+          }
+        }
         if (messageBefore) {
-          if (obj.messageDay !== messageBefore.messageDay) {
-            messages.push({
-              chatTime: obj.messageTime,
-            });
+          if (messageDate !== messageBefore.messageDate) {
+            messages.push({ chatTime: setItemTime(messageDate, dateNow, messageDay, messageTime) });
           }
         }
         messageBefore = obj;

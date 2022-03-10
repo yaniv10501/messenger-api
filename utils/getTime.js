@@ -1,6 +1,10 @@
-const getTime = () => {
+const { hourMs } = require('../assets/time');
+
+const getTime = (options) => {
+  const { customTime = false } = options || {};
+
   const removeSecondsPattern = /:[0-9]{2}$/;
-  const date = new Date();
+  const date = customTime ? new Date(Date.now() - hourMs * 3 * customTime) : new Date();
   const time = date.toLocaleTimeString('en-US', {
     timeZone: 'Asia/Jerusalem',
     hour12: false,

@@ -12,8 +12,12 @@ const usersIds = [];
 const usersArray = [];
 const userMessages = [];
 const friendMessages = [];
+const messagesTime = [];
 
 for (let i = 0; i < 5000; i += 1) {
+  messagesTime.push(getTime({ customTime: i }));
+}
+for (let i = 0; i < 100; i += 1) {
   const userText = `User${i}`;
   usersArray.push({
     userName: userText,
@@ -27,9 +31,14 @@ for (let i = 0; i < 5000; i += 1) {
   });
   const tempUserMessages = [];
   const tempFriendMessages = [];
-  const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate, dateNow } = getTime();
   for (let userI = 0; userI < 500; userI += 1) {
     const messageId = uuidv4();
+    const {
+      itemTime: messageTime,
+      itemDay: messageDay,
+      itemDate: messageDate,
+      dateNow,
+    } = messagesTime[499 - userI];
     const newMessage = {
       _id: messageId,
       messageTime,

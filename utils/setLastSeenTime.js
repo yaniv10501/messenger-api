@@ -1,9 +1,7 @@
+const { weekMs, dayMs, hourMs, minuteMs } = require('../assets/time');
+
 const setLastSeenTime = (lastSeenTime) => {
   if (!lastSeenTime) return '';
-  const minuteMs = 1000 * 60;
-  const hourMs = minuteMs * 60;
-  const dayMs = hourMs * 24;
-  const weekMs = dayMs * 7;
   const timeNow = Date.now();
   const timeDif = timeNow - lastSeenTime;
   const lastSeenDate = new Date(lastSeenTime).toLocaleDateString('en-GB');
