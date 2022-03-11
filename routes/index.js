@@ -26,6 +26,7 @@ const {
   setDontDisturbProfile,
   resetChatUnread,
   findOtherUsers,
+  getGroupImage,
 } = require('../controllers/users');
 const { login, logout } = require('../controllers/auth');
 const auth = require('../middlewares/auth');
@@ -61,6 +62,8 @@ router.get('/api/new/:chatId', getNewChat);
 router.get('/api/users/me/image', getUserImage);
 
 router.get('/api/image/:friendId', getFriendImage);
+
+router.get('/api/group/image/:groupId', getGroupImage);
 
 router.patch('/api/users/me/image', setUserImage);
 

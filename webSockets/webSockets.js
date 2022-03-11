@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const users = require('../states/users');
 const { objectifyCookie } = require('../utils/cookie');
@@ -34,20 +35,44 @@ module.exports.initWebSocket = (server) => {
       const { wsAuth: JwtWsToken } = objectedCookies;
       const { _id, token } = jwt.verify(JwtWsToken, JWT_SECRET);
       // eslint-disable-next-line no-console
-      console.log(`A new client has connected to websocket, userId - ${_id}, token - ${token}`);
-      clients.set(_id, ws);
-      users.set(
-        _id,
-        {
-          isOnline: {
-            online: true,
-            time: null,
-          },
-        },
-        {
-          isNew: false,
-        }
+      const socketId = uuidv4();
+      console.log(
+        `A new client has connected to websocket, userId - ${_id}, socket - ${socketId} token - ${token}`
       );
+      if (clients.get(_id)) {
+        clients.set(
+          _id,
+          (value) => [
+            ...value,
+            {
+              _id: socketId,
+              socket: ws,
+            },
+          ],
+          {
+            isNew: false,
+          }
+        );
+      } else {
+        clients.set(_id, [
+          {
+            _id: socketId,
+            socket: ws,
+          },
+        ]);
+        users.set(
+          _id,
+          {
+            isOnline: {
+              online: true,
+              time: null,
+            },
+          },
+          {
+            isNew: false,
+          }
+        );
+      }
       ws.isAlive = true;
       ws.on('message', (message) => {
         const parsedMessage = JSON.parse(message);
@@ -62,9 +87,12 @@ module.exports.initWebSocket = (server) => {
       });
       ws.on('pong', () => {
         // eslint-disable-next-line no-console
-        console.log(`UserId - ${_id} has ponged back`);
+        console.log(`UserId - ${_id} at socket - ${socketId} has ponged back`);
         const targetClient = clients.get(_id, { destruct: false });
-        targetClient.isAlive = true;
+        const currentClient = targetClient.find((client) => client._id === socketId);
+        if (currentClient) {
+          currentClient.socket.isAlive = true;
+        }
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -77,31 +105,46 @@ module.exports.initWebSocket = (server) => {
     console.log(`There are ${clients.size} clients connected`);
     clients.forEach((webSocket, _id) => {
       if (webSocket) {
-        const currentSocket = webSocket;
-        if (currentSocket.isAlive === false) {
-          currentSocket.terminate();
-          clients.delete(_id);
-          users.set(
-            _id,
-            {
-              isOnline: {
-                online: false,
-                time: Date.now(),
-              },
-            },
-            {
-              isNew: false,
+        webSocket.forEach(({ _id: socketId, socket }) => {
+          const currentSocket = socket;
+          if (currentSocket.isAlive === false) {
+            currentSocket.terminate();
+            if (webSocket.length < 2) {
+              clients.delete(_id);
+              users.set(
+                _id,
+                {
+                  isOnline: {
+                    online: false,
+                    time: Date.now(),
+                  },
+                },
+                {
+                  isNew: false,
+                }
+              );
+            } else {
+              clients.set(
+                _id,
+                (value) => {
+                  const newValue = value.filter((item) => item._id !== socketId);
+                  return newValue;
+                },
+                {
+                  isNew: false,
+                }
+              );
             }
-          );
-        } else {
-          // eslint-disable-next-line no-console
-          console.log(`Trying to ping userId - ${_id}`);
-          currentSocket.isAlive = false;
-          currentSocket.ping();
-        }
+          } else {
+            // eslint-disable-next-line no-console
+            console.log(`Trying to ping userId - ${_id} at socket - ${socketId}`);
+            currentSocket.isAlive = false;
+            currentSocket.ping();
+          }
+        });
       }
     });
-  }, 10000);
+  }, 5000);
 
   wsServer.on('close', () => {
     clearInterval(interval);

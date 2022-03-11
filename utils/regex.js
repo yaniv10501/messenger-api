@@ -42,3 +42,6 @@ module.exports.testMessage = (message) => {
     match: message.match(pattern),
   };
 };
+
+module.exports.replace24Pattern = /^24/;
+module.exports.removeSecondsPattern = /:[0-9]{2}$/;

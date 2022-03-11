@@ -116,7 +116,7 @@ User.find()
                       loadedCount: 49,
                       loadedAll,
                     });
-                    const lastChatMessage = messages[0];
+                    const lastChatMessage = messages[1];
                     const {
                       messageTime,
                       messageDay,
@@ -141,7 +141,7 @@ User.find()
                         chatName: groupName,
                         chatImage: groupImage,
                         isMute,
-                        lastMessage: lastChatMessage.messageContent,
+                        lastMessage: lastChatMessage.messageContent || lastChatMessage.groupMessage,
                         lastMessageByUser: messageByUser,
                         lastMessageBy: messageBy,
                         lastMessageTime,

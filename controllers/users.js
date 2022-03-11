@@ -20,7 +20,6 @@ const {
   getMoreUserChats,
   setUserChatTyping,
   setNewUserGroup,
-  getGroupId,
   getUserComposeList,
   getUserNewChat,
   getMoreUserGroupFriends,
@@ -265,38 +264,28 @@ module.exports.getNewChat = (req, res, next) => {
 
 module.exports.setGroupImage = (req, res, next) => {
   try {
-    const { _id } = req.user;
     const { chatId } = req.params;
     const { groupPic } = req.files || {};
     if (!groupPic) {
       throw new NotFoundError('Image file not found');
     }
-    getGroupId(_id, chatId)
-      .then((groupId) => {
-        const profilePicDirName = path.join(__dirname, `../groupsImages/${groupId}/`);
-        if (!fs.existsSync(profilePicDirName)) {
-          fs.mkdirSync(profilePicDirName);
-        }
-        const imageTypes = ['png', 'jpeg'];
-        const isValidType = imageTypes.some((imageType) => groupPic.mimetype.includes(imageType));
-        if (!isValidType) {
-          throw new NotAllowedError('Image type is not allowed');
-        }
-        imageTypes.forEach((imageType) => {
-          const imagePath = path.join(
-            __dirname,
-            `../groupsImages/${groupId}/group-pic.${imageType}`
-          );
-          if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-          }
-        });
-        groupPic.mv(`${profilePicDirName}group-pic.${groupPic.mimetype.replace('image/', '')}`);
-        res.json({ message: 'Group image uploaded' });
-      })
-      .catch((error) => {
-        throw error;
-      });
+    const profilePicDirName = path.join(__dirname, `../groupsImages/${chatId}/`);
+    if (!fs.existsSync(profilePicDirName)) {
+      fs.mkdirSync(profilePicDirName);
+    }
+    const imageTypes = ['png', 'jpeg'];
+    const isValidType = imageTypes.some((imageType) => groupPic.mimetype.includes(imageType));
+    if (!isValidType) {
+      throw new NotAllowedError('Image type is not allowed');
+    }
+    imageTypes.forEach((imageType) => {
+      const imagePath = path.join(__dirname, `../groupsImages/${chatId}/group-pic.${imageType}`);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    });
+    groupPic.mv(`${profilePicDirName}group-pic.${groupPic.mimetype.replace('image/', '')}`);
+    res.json({ message: 'Group image uploaded' });
   } catch (error) {
     checkErrors(error, next);
   }
@@ -306,8 +295,9 @@ module.exports.initNewGroup = (req, res, next) => {
   try {
     const { _id } = req.user;
     const { groupName, groupFriends, image } = req.body;
-    setNewUserGroup(_id, groupName, groupFriends, image);
-    res.json({ message: 'Hey' });
+    setNewUserGroup(_id, groupName, groupFriends, image).then((newGroup) => {
+      res.json(newGroup);
+    });
   } catch (error) {
     checkErrors(error, next);
   }
@@ -565,6 +555,27 @@ module.exports.findOtherUsers = (req, res, next) => {
     res.json({
       loadedAll: true,
       moreFriendsList,
+    });
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.getGroupImage = (req, res, next) => {
+  try {
+    const { groupId } = req.params;
+    const imageTypes = ['png', 'jpeg', 'jpg'];
+    imageTypes.some((imageType, index) => {
+      const imagePath = path.join(__dirname, `../groupsImages/${groupId}/group-pic.${imageType}`);
+      if (fs.existsSync(imagePath)) {
+        res.sendFile(imagePath);
+        return true;
+      }
+      if (index + 1 === imageTypes.length) {
+        res.status(404).json({ message: 'No group image' });
+        return true;
+      }
+      return false;
     });
   } catch (error) {
     checkErrors(error, next);

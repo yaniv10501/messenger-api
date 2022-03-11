@@ -15,12 +15,18 @@ module.exports.sendMessage = async (req, res, next) => {
     const { chatId } = req.params;
     const messageId = uuidv4();
     const { message, isMute: isChatdMute, friends, isGroup } = req.body;
-    const { itemTime: messageTime, itemDay: messageDay, itemDate: messageDate } = getTime();
+    const {
+      itemTime: messageTime,
+      itemDay: messageDay,
+      itemDate: messageDate,
+      dateNow,
+    } = getTime();
     const newMessage = {
       _id: messageId,
       messageTime,
       messageDay,
       messageDate,
+      dateNow,
       messageContent: message,
       unreed: false,
       messageByUser: true,

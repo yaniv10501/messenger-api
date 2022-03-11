@@ -45,12 +45,24 @@ module.exports.getMessagesStream = async (filePath, options) => {
         if (!messageBefore && i === 0) {
           const todayDate = new Date().toLocaleDateString('en-GB');
           if (messageDate !== todayDate) {
-            messages.push({ chatTime: setItemTime(messageDate, dateNow, messageDay, messageTime) });
+            messages.push({
+              chatTime: setItemTime(messageDate, dateNow, messageDay, messageTime, {
+                chatTime: true,
+              }),
+            });
+          } else {
+            messages.push({
+              chatTime: 'Today',
+            });
           }
         }
         if (messageBefore) {
           if (messageDate !== messageBefore.messageDate) {
-            messages.push({ chatTime: setItemTime(messageDate, dateNow, messageDay, messageTime) });
+            messages.push({
+              chatTime: setItemTime(messageDate, dateNow, messageDay, messageTime, {
+                chatTime: true,
+              }),
+            });
           }
         }
         messageBefore = obj;

@@ -14,7 +14,7 @@ const userMessages = [];
 const friendMessages = [];
 const messagesTime = [];
 
-for (let i = 0; i < 5000; i += 1) {
+for (let i = 24; i < 10000; i += 1) {
   messagesTime.push(getTime({ customTime: i }));
 }
 for (let i = 0; i < 100; i += 1) {
