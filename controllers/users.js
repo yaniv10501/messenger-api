@@ -30,6 +30,7 @@ const {
   setResponseFriendRequest,
   getUserFriendRequests,
   getUserPendingFriendRequests,
+  setNewBlockedUser,
 } = require('../lib/friendRequests');
 const users = require('../states/users');
 const { checkFilePathExists } = require('../utils/fs');
@@ -375,8 +376,20 @@ module.exports.addFriend = async (req, res, next) => {
   try {
     const { _id } = req.user;
     const { friendId, index } = req.params;
-    const newFriendRequest = await addUserFriendRequest(_id, friendId, index);
+    const { response } = req.query;
+    const newFriendRequest = await addUserFriendRequest(_id, friendId, index, response);
     res.json(newFriendRequest);
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.blockUser = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { otherUserId, index } = req.params;
+    setNewBlockedUser(_id, otherUserId, index);
+    res.json({ message: 'Successfuly blocked user' });
   } catch (error) {
     checkErrors(error, next);
   }
@@ -386,8 +399,9 @@ module.exports.acceptFriendRequest = (req, res, next) => {
   try {
     const { _id } = req.user;
     const { requestId } = req.params;
-    const { index } = req.query;
-    setResponseFriendRequest(_id, requestId, index);
+    const { index, response } = req.query;
+    console.log(response);
+    setResponseFriendRequest(_id, requestId, index, response);
     res.json({ message: 'Friend request accepted' });
   } catch (error) {
     checkErrors(error, next);
@@ -518,31 +532,37 @@ module.exports.findOtherUsers = (req, res, next) => {
     const moreFriendsList = [];
     const moreFriendsState = [];
     const otherUsersList = users.findList(_id, userQuery);
-    for (let i = 0; i < 20; i += 1) {
+    let listLimit = 20;
+    for (let i = 0; i < listLimit; i += 1) {
       const currentOtherUser = otherUsersList[i];
       if (!currentOtherUser) {
         i = 20;
       }
       if (currentOtherUser) {
-        const { firstName, lastName, gender, birthday, image } = currentOtherUser;
-        const newOtherUserId = uuidv4();
-        moreFriendsList.push({
-          _id: newOtherUserId,
-          firstName,
-          lastName,
-          gender,
-          birthday,
-          image,
-        });
-        moreFriendsState.push({
-          _id: currentOtherUser._id,
-          otherUserId: newOtherUserId,
-          firstName,
-          lastName,
-          gender,
-          birthday,
-          image,
-        });
+        const { firstName, lastName, gender, birthday, image, blockedUsers } = currentOtherUser;
+        const isBlocked = blockedUsers.some((blockedUser) => blockedUser._id.toString() === _id);
+        if (!isBlocked) {
+          const newOtherUserId = uuidv4();
+          moreFriendsList.push({
+            _id: newOtherUserId,
+            firstName,
+            lastName,
+            gender,
+            birthday,
+            image,
+          });
+          moreFriendsState.push({
+            _id: currentOtherUser._id,
+            otherUserId: newOtherUserId,
+            firstName,
+            lastName,
+            gender,
+            birthday,
+            image,
+          });
+        } else {
+          listLimit += 1;
+        }
       }
     }
     users.set(

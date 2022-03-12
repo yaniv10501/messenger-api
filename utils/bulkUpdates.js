@@ -172,138 +172,191 @@ const moveGroupUp = (_id, chatId, groupId, groupFriends, isChatMute, groupImage,
   },
 ];
 
-const addFriend = (_id, friendRequestId, itemTime, itemDay, itemDate, dateNow) => [
-  {
-    updateOne: {
-      filter: { _id },
-      update: {
-        $push: {
-          friendRequests: {
-            $each: [
-              {
-                friend: { _id: friendRequestId },
-                requestTime: itemTime,
-                requestDay: itemDay,
-                requestDate: itemDate,
-                dateNow,
+const addFriend = (_id, friendRequestId, itemTime, itemDay, itemDate, dateNow, response) =>
+  response === true
+    ? [
+        {
+          updateOne: {
+            filter: { _id },
+            update: {
+              $push: {
+                friendRequests: {
+                  $each: [
+                    {
+                      friend: { _id: friendRequestId },
+                      requestTime: itemTime,
+                      requestDay: itemDay,
+                      requestDate: itemDate,
+                      dateNow,
+                    },
+                  ],
+                  $position: 0,
+                },
               },
-            ],
-            $position: 0,
+            },
           },
         },
-      },
-    },
-  },
-  {
-    updateOne: {
-      filter: { _id: friendRequestId },
-      update: {
-        $push: {
-          pendingFriendRequests: {
-            $each: [
-              {
-                friend: { _id },
-                requestTime: itemTime,
-                requestDay: itemDay,
-                requestDate: itemDate,
-                dateNow,
+        {
+          updateOne: {
+            filter: { _id: friendRequestId },
+            update: {
+              $push: {
+                pendingFriendRequests: {
+                  $each: [
+                    {
+                      friend: { _id },
+                      requestTime: itemTime,
+                      requestDay: itemDay,
+                      requestDate: itemDate,
+                      dateNow,
+                    },
+                  ],
+                  $position: 0,
+                },
               },
-            ],
-            $position: 0,
+            },
+            arrayFilter: [{ 'element._id': { $eq: { _id } } }],
           },
         },
-      },
-      arrayFilter: [{ 'element._id': { $eq: { _id } } }],
-    },
-  },
-];
+      ]
+    : [
+        {
+          updateOne: {
+            filter: { _id },
+            update: {
+              $push: {
+                blockedUsers: {
+                  $each: [
+                    {
+                      _id: friendRequestId,
+                    },
+                  ],
+                  $position: 0,
+                },
+              },
+            },
+          },
+        },
+      ];
 
-const responseFriendRequest = (_id, friendId, chatId) => [
-  {
-    updateOne: {
-      filter: { _id },
-      update: {
-        $addToSet: {
-          friends: {
-            _id: friendId,
-          },
-        },
-      },
-    },
-  },
-  {
-    updateOne: {
-      filter: { _id: friendId },
-      update: {
-        $addToSet: {
-          friends: {
-            _id,
-          },
-        },
-      },
-    },
-  },
-  {
-    updateOne: {
-      filter: { _id },
-      update: {
-        $addToSet: {
-          chats: {
-            chatId,
-            friends: {
-              _id: friendId,
-            },
-            isGroup: false,
-          },
-        },
-      },
-    },
-  },
-  {
-    updateOne: {
-      filter: { _id: friendId },
-      update: {
-        $addToSet: {
-          chats: {
-            chatId,
-            friends: {
-              _id,
-            },
-            isGroup: false,
-          },
-        },
-      },
-    },
-  },
-  {
-    updateOne: {
-      filter: { _id },
-      update: {
-        $pull: {
-          pendingFriendRequests: {
-            friend: {
-              _id: friendId,
+const responseFriendRequest = (_id, friendId, chatId, response) =>
+  response === true
+    ? [
+        {
+          updateOne: {
+            filter: { _id },
+            update: {
+              $addToSet: {
+                friends: {
+                  _id: friendId,
+                },
+              },
             },
           },
         },
-      },
-    },
-  },
-  {
-    updateOne: {
-      filter: { _id: friendId },
-      update: {
-        $pull: {
-          friendRequests: {
-            friend: {
-              _id,
+        {
+          updateOne: {
+            filter: { _id: friendId },
+            update: {
+              $addToSet: {
+                friends: {
+                  _id,
+                },
+              },
             },
           },
         },
-      },
-    },
-  },
-];
+        {
+          updateOne: {
+            filter: { _id },
+            update: {
+              $addToSet: {
+                chats: {
+                  chatId,
+                  friends: {
+                    _id: friendId,
+                  },
+                  isGroup: false,
+                },
+              },
+            },
+          },
+        },
+        {
+          updateOne: {
+            filter: { _id: friendId },
+            update: {
+              $addToSet: {
+                chats: {
+                  chatId,
+                  friends: {
+                    _id,
+                  },
+                  isGroup: false,
+                },
+              },
+            },
+          },
+        },
+        {
+          updateOne: {
+            filter: { _id },
+            update: {
+              $pull: {
+                pendingFriendRequests: {
+                  friend: {
+                    _id: friendId,
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          updateOne: {
+            filter: { _id: friendId },
+            update: {
+              $pull: {
+                friendRequests: {
+                  friend: {
+                    _id,
+                  },
+                },
+              },
+            },
+          },
+        },
+      ]
+    : [
+        {
+          updateOne: {
+            filter: { _id },
+            update: {
+              $pull: {
+                pendingFriendRequests: {
+                  friend: {
+                    _id: friendId,
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          updateOne: {
+            filter: { _id: friendId },
+            update: {
+              $pull: {
+                friendRequests: {
+                  friend: {
+                    _id,
+                  },
+                },
+              },
+            },
+          },
+        },
+      ];
 
 const setNewTokens = (userId, oldWsToken, refreshToken, newWsToken, newRefreshToken) => [
   {

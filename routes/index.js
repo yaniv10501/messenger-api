@@ -85,9 +85,9 @@ router.get('/api/friends/requests', getFriendRequests);
 
 router.get('/api/friends/pending', getPendingFriendRequests);
 
-router.post('/api/friends/:friendId/:index', addFriend);
+router.post('/api/friends/add/:friendId/:index', addFriend);
 
-router.post('/api/accept/:requestId', acceptFriendRequest);
+router.post('/api/friends/response/:requestId', acceptFriendRequest);
 
 router.get('/api/messages/:chatId', getMessages);
 
