@@ -377,7 +377,8 @@ module.exports.addFriend = async (req, res, next) => {
     const { _id } = req.user;
     const { friendId, index } = req.params;
     const { response } = req.query;
-    const newFriendRequest = await addUserFriendRequest(_id, friendId, index, response);
+    const requestResponse = response === 'true';
+    const newFriendRequest = await addUserFriendRequest(_id, friendId, index, requestResponse);
     res.json(newFriendRequest);
   } catch (error) {
     checkErrors(error, next);
@@ -400,8 +401,9 @@ module.exports.acceptFriendRequest = (req, res, next) => {
     const { _id } = req.user;
     const { requestId } = req.params;
     const { index, response } = req.query;
+    const requestResponse = response === 'true';
     console.log(response);
-    setResponseFriendRequest(_id, requestId, index, response);
+    setResponseFriendRequest(_id, requestId, index, requestResponse);
     res.json({ message: 'Friend request accepted' });
   } catch (error) {
     checkErrors(error, next);

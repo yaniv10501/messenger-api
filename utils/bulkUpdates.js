@@ -173,7 +173,7 @@ const moveGroupUp = (_id, chatId, groupId, groupFriends, isChatMute, groupImage,
 ];
 
 const addFriend = (_id, friendRequestId, itemTime, itemDay, itemDate, dateNow, response) =>
-  response === true
+  response
     ? [
         {
           updateOne: {
@@ -240,7 +240,7 @@ const addFriend = (_id, friendRequestId, itemTime, itemDay, itemDate, dateNow, r
       ];
 
 const responseFriendRequest = (_id, friendId, chatId, response) =>
-  response === true
+  response
     ? [
         {
           updateOne: {
