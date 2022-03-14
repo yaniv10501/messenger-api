@@ -541,9 +541,22 @@ module.exports.findOtherUsers = (req, res, next) => {
         i = 20;
       }
       if (currentOtherUser) {
-        const { firstName, lastName, gender, birthday, image, blockedUsers } = currentOtherUser;
-        const isBlocked = blockedUsers.some((blockedUser) => blockedUser._id.toString() === _id);
-        if (!isBlocked) {
+        const {
+          firstName,
+          lastName,
+          gender,
+          birthday,
+          image,
+          blockedUsers: otherUserBlockedUsers,
+        } = currentOtherUser;
+        const isBlockedByOther = otherUserBlockedUsers.some(
+          (blockedUser) => blockedUser._id.toString() === _id
+        );
+        if (!isBlockedByOther) {
+          const { blockedUsers = [] } = users.get(_id);
+          const isBlocked = blockedUsers.some(
+            (blockedUser) => blockedUser._id.toString() === currentOtherUser._id
+          );
           const newOtherUserId = uuidv4();
           moreFriendsList.push({
             _id: newOtherUserId,
@@ -552,6 +565,7 @@ module.exports.findOtherUsers = (req, res, next) => {
             gender,
             birthday,
             image,
+            isBlocked,
           });
           moreFriendsState.push({
             _id: currentOtherUser._id,
@@ -561,6 +575,7 @@ module.exports.findOtherUsers = (req, res, next) => {
             gender,
             birthday,
             image,
+            isBlocked,
           });
         } else {
           listLimit += 1;

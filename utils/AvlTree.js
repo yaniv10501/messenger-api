@@ -345,24 +345,21 @@ class AvlTree {
           } else {
             if (callback) {
               callback(node.value, node._id);
-            }
-            if (!callback) {
-              if (find) {
-                const {
-                  value: { userName, firstName, lastName },
-                } = node;
-                if (userName === query) {
-                  array.unshift({ _id: node._id, ...node.value });
-                } else if (
-                  userName.includes(query) ||
-                  firstName.includes(query) ||
-                  lastName.includes(query)
-                ) {
-                  array.push({ _id: node._id, ...node.value });
-                }
-              } else {
+            } else if (find) {
+              const {
+                value: { userName, firstName, lastName },
+              } = node;
+              if (userName === query) {
+                array.unshift({ _id: node._id, ...node.value });
+              } else if (
+                userName.includes(query) ||
+                firstName.includes(query) ||
+                lastName.includes(query)
+              ) {
                 array.push({ _id: node._id, ...node.value });
               }
+            } else {
+              array.push({ _id: node._id, ...node.value });
             }
             if (node.left) queue.push(node.left);
             if (node.right) queue.push(node.right);
