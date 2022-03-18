@@ -27,6 +27,7 @@ const {
   resetChatUnread,
   findOtherUsers,
   getGroupImage,
+  alterFriendRequest,
 } = require('../controllers/users');
 const { login, logout } = require('../controllers/auth');
 const auth = require('../middlewares/auth');
@@ -86,6 +87,8 @@ router.get('/api/friends/requests', getFriendRequests);
 router.get('/api/friends/pending', getPendingFriendRequests);
 
 router.post('/api/friends/add/:friendId/:index', addFriend);
+
+router.post('/api/friends/alter/:requestId', alterFriendRequest);
 
 router.post('/api/friends/response/:requestId', acceptFriendRequest);
 

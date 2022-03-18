@@ -31,6 +31,7 @@ const {
   getUserFriendRequests,
   getUserPendingFriendRequests,
   setNewBlockedUser,
+  alterUserFriendRequest,
 } = require('../lib/friendRequests');
 const users = require('../states/users');
 const { checkFilePathExists } = require('../utils/fs');
@@ -614,6 +615,19 @@ module.exports.getGroupImage = (req, res, next) => {
       }
       return false;
     });
+  } catch (error) {
+    checkErrors(error, next);
+  }
+};
+
+module.exports.alterFriendRequest = (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { requestId } = req.params;
+    const { response, index } = req.query;
+    const requestResponse = response === 'true';
+    alterUserFriendRequest(_id, requestId, index, requestResponse);
+    res.json({ message: 'Friend request successfully altered' });
   } catch (error) {
     checkErrors(error, next);
   }

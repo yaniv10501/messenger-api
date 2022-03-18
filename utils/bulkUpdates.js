@@ -172,7 +172,16 @@ const moveGroupUp = (_id, chatId, groupId, groupFriends, isChatMute, groupImage,
   },
 ];
 
-const addFriend = (_id, friendRequestId, itemTime, itemDay, itemDate, dateNow, response) =>
+const addFriend = (
+  _id,
+  friendRequestId,
+  itemTime,
+  itemDay,
+  itemDate,
+  dateNow,
+  response,
+  isBlocked
+) =>
   response
     ? [
         {
@@ -218,25 +227,58 @@ const addFriend = (_id, friendRequestId, itemTime, itemDay, itemDate, dateNow, r
             arrayFilter: [{ 'element._id': { $eq: { _id } } }],
           },
         },
-      ]
-    : [
-        {
+        isBlocked && {
           updateOne: {
             filter: { _id },
             update: {
-              $push: {
+              $pull: {
                 blockedUsers: {
-                  $each: [
+                  $eq: [
                     {
                       _id: friendRequestId,
                     },
                   ],
-                  $position: 0,
                 },
               },
             },
           },
         },
+      ]
+    : [
+        isBlocked
+          ? {
+              updateOne: {
+                filter: { _id },
+                update: {
+                  $pull: {
+                    blockedUsers: {
+                      $eq: [
+                        {
+                          _id: friendRequestId,
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            }
+          : {
+              updateOne: {
+                filter: { _id },
+                update: {
+                  $push: {
+                    blockedUsers: {
+                      $each: [
+                        {
+                          _id: friendRequestId,
+                        },
+                      ],
+                      $position: 0,
+                    },
+                  },
+                },
+              },
+            },
       ];
 
 const responseFriendRequest = (_id, friendId, chatId, response) =>
@@ -465,11 +507,60 @@ const updateRefreshToken = (userId, refreshToken, newRefreshToken) => [
   },
 ];
 
+const alterFriendRequestUpdate = (userId, otherUserId, response) => [
+  {
+    updateOne: {
+      filter: { _id: userId },
+      update: {
+        $pull: {
+          friendRequests: {
+            friend: {
+              _id: otherUserId,
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    updateOne: {
+      filter: { _id: otherUserId },
+      update: {
+        $pull: {
+          pendingFriendRequests: {
+            friend: {
+              _id: userId,
+            },
+          },
+        },
+      },
+    },
+  },
+  !response && {
+    updateOne: {
+      filter: { _id: otherUserId },
+      update: {
+        $push: {
+          blockedUsers: {
+            $each: [
+              {
+                _id: otherUserId,
+              },
+            ],
+            $position: 0,
+          },
+        },
+      },
+    },
+  },
+];
+
 module.exports = {
   moveChatUp,
   moveGroupUp,
   addFriend,
   responseFriendRequest,
+  alterFriendRequestUpdate,
   setNewTokens,
   updateRefreshToken,
 };
