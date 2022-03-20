@@ -181,8 +181,8 @@ const addFriend = (
   dateNow,
   response,
   isBlocked
-) =>
-  response
+) => {
+  const bulkUpdate = response
     ? [
         {
           updateOne: {
@@ -227,22 +227,6 @@ const addFriend = (
             arrayFilter: [{ 'element._id': { $eq: { _id } } }],
           },
         },
-        isBlocked && {
-          updateOne: {
-            filter: { _id },
-            update: {
-              $pull: {
-                blockedUsers: {
-                  $eq: [
-                    {
-                      _id: friendRequestId,
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        },
       ]
     : [
         isBlocked
@@ -280,6 +264,26 @@ const addFriend = (
               },
             },
       ];
+  if (isBlocked) {
+    bulkUpdate.push({
+      updateOne: {
+        filter: { _id },
+        update: {
+          $pull: {
+            blockedUsers: {
+              $eq: [
+                {
+                  _id: friendRequestId,
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+  }
+  return bulkUpdate;
+};
 
 const responseFriendRequest = (_id, friendId, chatId, response) =>
   response
@@ -507,53 +511,58 @@ const updateRefreshToken = (userId, refreshToken, newRefreshToken) => [
   },
 ];
 
-const alterFriendRequestUpdate = (userId, otherUserId, response) => [
-  {
-    updateOne: {
-      filter: { _id: userId },
-      update: {
-        $pull: {
-          friendRequests: {
-            friend: {
-              _id: otherUserId,
-            },
-          },
-        },
-      },
-    },
-  },
-  {
-    updateOne: {
-      filter: { _id: otherUserId },
-      update: {
-        $pull: {
-          pendingFriendRequests: {
-            friend: {
-              _id: userId,
-            },
-          },
-        },
-      },
-    },
-  },
-  !response && {
-    updateOne: {
-      filter: { _id: otherUserId },
-      update: {
-        $push: {
-          blockedUsers: {
-            $each: [
-              {
+const alterFriendRequestUpdate = (userId, otherUserId, response) => {
+  const bulkUpdate = [
+    {
+      updateOne: {
+        filter: { _id: userId },
+        update: {
+          $pull: {
+            friendRequests: {
+              friend: {
                 _id: otherUserId,
               },
-            ],
-            $position: 0,
+            },
           },
         },
       },
     },
-  },
-];
+    {
+      updateOne: {
+        filter: { _id: otherUserId },
+        update: {
+          $pull: {
+            pendingFriendRequests: {
+              friend: {
+                _id: userId,
+              },
+            },
+          },
+        },
+      },
+    },
+  ];
+  if (!response) {
+    bulkUpdate.push({
+      updateOne: {
+        filter: { _id: otherUserId },
+        update: {
+          $push: {
+            blockedUsers: {
+              $each: [
+                {
+                  _id: otherUserId,
+                },
+              ],
+              $position: 0,
+            },
+          },
+        },
+      },
+    });
+  }
+  return bulkUpdate;
+};
 
 module.exports = {
   moveChatUp,

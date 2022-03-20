@@ -16,6 +16,10 @@ module.exports.writeJsonFile = (filePath, info, options) => {
   const dirname = path.join(__dirname, path.dirname(filePath));
 
   if (!fs.existsSync(dirname)) {
+    const parentDirectory = path.dirname(dirname);
+    if (!fs.existsSync(parentDirectory)) {
+      fs.mkdirSync(parentDirectory);
+    }
     fs.mkdirSync(dirname);
   }
 

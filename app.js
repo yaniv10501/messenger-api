@@ -12,6 +12,7 @@ const ResourceNotFound = require('./utils/errors/ResourceNotFound');
 const routes = require('./routes/index');
 const corsOptions = require('./utils/cors');
 const { initWebSocket } = require('./webSockets/webSockets');
+const initStartUp = require('./utils/startUp');
 
 const app = express();
 
@@ -21,6 +22,8 @@ const {
   MONGO_DB_SERVER = 'mongodb://localhost:27017',
   COOKIE_SECRET = 'cookie-secret',
 } = process.env;
+
+initStartUp();
 
 mongoose.connect(`${MONGO_DB_SERVER}/messenger`);
 
