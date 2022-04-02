@@ -3,7 +3,16 @@ const NotFoundError = require('./errors/NotFoundError');
 const UnknownError = require('./errors/UnknownError');
 const { writeJsonFile, readJsonFileSync } = require('./fs');
 
-module.exports.createKey = async (_id, chatId) => {
+const getKey = (_id, chatId) => {
+  let key = this.getPublicKey(_id, chatId);
+  if (key instanceof Error) {
+    this.createKey(_id, chatId);
+    key = this.getPublicKey(_id, chatId);
+  }
+  return new NodeRSA(key);
+};
+
+module.exports.createKey = (_id, chatId) => {
   try {
     const key = new NodeRSA();
     key.generateKeyPair(2048, 65537);
@@ -34,23 +43,19 @@ module.exports.getPrivateKey = (_id, chatId) => {
   }
 };
 
-module.exports.encryptMessage = (_id, chatId, message) => {
-  let key = this.getPublicKey(_id, chatId);
-  if (key instanceof Error) {
-    this.createKey(_id, chatId);
-    key = this.getPublicKey(_id, chatId);
-  }
-  const rsaKey = new NodeRSA(key);
-  const encryptedMessage = rsaKey.encrypt(message, 'base64');
-  return encryptedMessage;
+module.exports.encryptMessage = (_id, friendId, chatId, message) => {
+  const { messageDate, dateNow, messageDay, messageTime } = message;
+  const userKey = getKey(_id, chatId);
+  const friendKey = getKey(friendId, chatId);
+  const firstEncryptedMessage = friendKey.encrypt(message, 'base64');
+  const encryptedMessage = userKey.encrypt(firstEncryptedMessage, 'base64');
+  return { encryptedMessage, messageDate, dateNow, messageDay, messageTime };
 };
 
-module.exports.decryptMessage = (_id, chatId, message) => {
-  const key = this.getPrivateKey(_id, chatId);
-  if (key instanceof Error) {
-    return new NotFoundError(`Key doesn't exist`);
-  }
-  const rsaKey = new NodeRSA(key);
-  const decryptedMessage = rsaKey.decrypt(message, 'utf8');
+module.exports.decryptMessage = (_id, friendId, chatId, message) => {
+  const userKey = getKey(_id, chatId);
+  const friendKey = getKey(friendId, chatId);
+  const firstDecryptedMessage = userKey.decrypt(message.encryptedMessage, 'utf8');
+  const decryptedMessage = JSON.parse(friendKey.decrypt(firstDecryptedMessage, 'utf8'));
   return decryptedMessage;
 };

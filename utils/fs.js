@@ -70,11 +70,11 @@ module.exports.getMessagesStream = async (filePath, options) => {
           }
         }
         messageBefore = obj;
-        messages.push(obj);
-        i += 1;
-        if (i > toLoad) {
-          parser.end();
-        }
+      }
+      messages.push(obj);
+      i += 1;
+      if (i > toLoad) {
+        parser.end();
       }
       if (i < start) i += 1;
     });

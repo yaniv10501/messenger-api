@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/user');
+const { encryptMessage } = require('../utils/chatKeys');
 const { writeJsonFile, readJsonFileSync } = require('../utils/fs');
 const getTime = require('../utils/getTime');
 
@@ -29,38 +30,8 @@ for (let i = 0; i < 100; i += 1) {
     image: '',
     email: `user${i}@me.com`,
   });
-  const tempUserMessages = [];
-  const tempFriendMessages = [];
-  for (let userI = 0; userI < 500; userI += 1) {
-    const messageId = uuidv4();
-    const {
-      itemTime: messageTime,
-      itemDay: messageDay,
-      itemDate: messageDate,
-      dateNow,
-    } = messagesTime[499 - userI];
-    const newMessage = {
-      _id: messageId,
-      messageTime,
-      messageDay,
-      messageDate,
-      dateNow,
-      messageContent: `message${userI}`,
-      unreed: false,
-      messageByUser: true,
-    };
-    const newFriendMessage = {
-      ...newMessage,
-      unreed: true,
-      messageByUser: false,
-    };
-    tempUserMessages.unshift(newMessage);
-    tempFriendMessages.unshift(newFriendMessage);
-  }
-  userMessages.push(tempUserMessages);
-  friendMessages.push(tempFriendMessages);
   // eslint-disable-next-line no-console
-  console.log(`Finished writing messages for user - ${i}!`);
+  console.log(`Finished setting user - ${i}!`);
 }
 
 User.deleteMany()
@@ -71,6 +42,8 @@ User.deleteMany()
         console.log(`Users successfully created!`);
         const friendPromises = [];
         await result.forEach((user, userIndex) => {
+          const tempUserMessages = [];
+          const tempFriendMessages = [];
           const user0Id = user._id.toString();
           usersIds.push(user0Id);
           const emptyGroupId = uuidv4();
@@ -92,6 +65,30 @@ User.deleteMany()
             const chatId = uuidv4();
             if (userIndex < otherIndex && userIndex + 5 > otherIndex) {
               const friendId = otherUser._id.toString();
+              const messageId = uuidv4();
+              const {
+                itemTime: messageTime,
+                itemDay: messageDay,
+                itemDate: messageDate,
+                dateNow,
+              } = messagesTime[499 - userIndex];
+              const newMessage = encryptMessage(user0Id, friendId, chatId, {
+                _id: messageId,
+                messageTime,
+                messageDay,
+                messageDate,
+                dateNow,
+                messageContent: `message${userIndex}`,
+                unreed: false,
+                messageByUser: true,
+              });
+              const newFriendMessage = {
+                ...newMessage,
+                unreed: true,
+                messageByUser: false,
+              };
+              tempUserMessages.unshift(newMessage);
+              tempFriendMessages.unshift(newFriendMessage);
               const bulkUpdate = [
                 {
                   updateOne: {
@@ -156,6 +153,8 @@ User.deleteMany()
               friendPromises.push(User.bulkWrite(bulkUpdate).catch((error) => console.log(error)));
             }
           });
+          userMessages.push(tempUserMessages);
+          friendMessages.push(tempFriendMessages);
         });
         await Promise.all(friendPromises).then(() => {
           User.find()

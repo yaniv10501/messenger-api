@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/user');
 const AvlTree = require('../utils/AvlTree');
+const { decryptMessage } = require('../utils/chatKeys');
 const { getMessagesStream, checkFilePathExists } = require('../utils/fs');
 const setItemTime = require('../utils/setItemTime');
 
@@ -117,14 +118,17 @@ User.find()
                       loadedAll,
                     });
                     const lastChatMessage = messages[1];
+                    console.log(lastChatMessage);
                     const {
+                      messageContent,
+                      groupMessage,
                       messageTime,
                       messageDay,
                       messageDate,
                       dateNow,
                       messageByUser,
                       messageBy,
-                    } = lastChatMessage;
+                    } = decryptMessage(userId, _id, lastChatMessage);
                     const lastMessageTime = setItemTime(
                       messageDate,
                       dateNow,
@@ -141,7 +145,7 @@ User.find()
                         chatName: groupName,
                         chatImage: groupImage,
                         isMute,
-                        lastMessage: lastChatMessage.messageContent || lastChatMessage.groupMessage,
+                        lastMessage: messageContent || groupMessage,
                         lastMessageByUser: messageByUser,
                         lastMessageBy: messageBy,
                         lastMessageTime,
@@ -156,7 +160,7 @@ User.find()
                       chatName: `${chatFriends[0].firstName} ${chatFriends[0].lastName}`,
                       chatImage: chatFriends[0].image,
                       isMute,
-                      lastMessage: lastChatMessage.messageContent,
+                      lastMessage: messageContent,
                       lastMessageByUser: messageByUser,
                       lastMessageTime,
                       unreadCount,
