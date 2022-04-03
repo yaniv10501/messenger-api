@@ -199,7 +199,15 @@ module.exports.getUserMe = (req, res, next) => {
   try {
     const { _id } = req.user;
     const currentUser = users.get(_id);
-    const { firstName, lastName, email, image, messages, dontDisturb, notifications } = currentUser;
+    const {
+      firstName,
+      lastName,
+      email,
+      image,
+      messages,
+      dontDisturb,
+      notifications = [],
+    } = currentUser;
     User.findOne({ _id })
       .select(['chats'])
       .then(({ chats }) => {

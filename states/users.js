@@ -128,7 +128,7 @@ User.find()
                       dateNow,
                       messageByUser,
                       messageBy,
-                    } = decryptMessage(userId, _id, lastChatMessage);
+                    } = decryptMessage(userId, chatFriendslist[0]._id, _id, lastChatMessage);
                     const lastMessageTime = setItemTime(
                       messageDate,
                       dateNow,

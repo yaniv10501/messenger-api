@@ -7,8 +7,9 @@ mongoose.connect(`${MONGO_DB_SERVER}/messenger`);
 
 const usersArray = [];
 
-for (let i = 0; i < 100000; i += 1) {
+for (let i = 0; i < 1000; i += 1) {
   usersArray.push({
+    userName: `user${i}`,
     firstName: `User${i}`,
     lastName: `User${i}`,
     gender: 'male',

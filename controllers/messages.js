@@ -45,7 +45,7 @@ module.exports.getMessages = async (req, res, next) => {
     const { _id } = req.user;
     const { chatId } = req.params;
     try {
-      const messages = getUserChatMessages(_id, chatId);
+      const messages = await getUserChatMessages(_id, chatId);
       res.json({
         _id: chatId,
         ...messages,

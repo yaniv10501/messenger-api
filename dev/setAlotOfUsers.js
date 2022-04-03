@@ -42,119 +42,123 @@ User.deleteMany()
         console.log(`Users successfully created!`);
         const friendPromises = [];
         await result.forEach((user, userIndex) => {
-          const tempUserMessages = [];
-          const tempFriendMessages = [];
-          const user0Id = user._id.toString();
-          usersIds.push(user0Id);
-          const emptyGroupId = uuidv4();
-          friendPromises.push(
-            User.findOneAndUpdate(
-              { _id: user0Id },
-              {
-                $addToSet: {
-                  chats: {
-                    chatId: emptyGroupId,
-                    isGroup: true,
-                    isEmpty: true,
-                  },
-                },
-              }
-            )
-          );
-          result.forEach((otherUser, otherIndex) => {
-            const chatId = uuidv4();
-            if (userIndex < otherIndex && userIndex + 5 > otherIndex) {
-              const friendId = otherUser._id.toString();
-              const messageId = uuidv4();
-              const {
-                itemTime: messageTime,
-                itemDay: messageDay,
-                itemDate: messageDate,
-                dateNow,
-              } = messagesTime[499 - userIndex];
-              const newMessage = encryptMessage(user0Id, friendId, chatId, {
-                _id: messageId,
-                messageTime,
-                messageDay,
-                messageDate,
-                dateNow,
-                messageContent: `message${userIndex}`,
-                unreed: false,
-                messageByUser: true,
-              });
-              const newFriendMessage = {
-                ...newMessage,
-                unreed: true,
-                messageByUser: false,
-              };
-              tempUserMessages.unshift(newMessage);
-              tempFriendMessages.unshift(newFriendMessage);
-              const bulkUpdate = [
+          if (userIndex < 3) {
+            const tempUserMessages = [];
+            const tempFriendMessages = [];
+            const user0Id = user._id.toString();
+            usersIds.push(user0Id);
+            const emptyGroupId = uuidv4();
+            friendPromises.push(
+              User.findOneAndUpdate(
+                { _id: user0Id },
                 {
-                  updateOne: {
-                    filter: { _id: user0Id },
-                    update: {
-                      $addToSet: {
-                        friends: {
-                          _id: friendId,
-                        },
-                      },
+                  $addToSet: {
+                    chats: {
+                      chatId: emptyGroupId,
+                      isGroup: true,
+                      isEmpty: true,
                     },
                   },
-                },
-                {
-                  updateOne: {
-                    filter: { _id: friendId },
-                    update: {
-                      $addToSet: {
-                        friends: {
-                          _id: user0Id,
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  updateOne: {
-                    filter: { _id: user0Id },
-                    update: {
-                      $addToSet: {
-                        chats: {
-                          chatId,
+                }
+              )
+            );
+            result.forEach((otherUser, otherIndex) => {
+              const chatId = uuidv4();
+              if (userIndex < otherIndex && userIndex + 5 > otherIndex) {
+                const friendId = otherUser._id.toString();
+                const messageId = uuidv4();
+                const {
+                  itemTime: messageTime,
+                  itemDay: messageDay,
+                  itemDate: messageDate,
+                  dateNow,
+                } = messagesTime[499 - userIndex];
+                const newMessage = encryptMessage(user0Id, friendId, chatId, {
+                  _id: messageId,
+                  messageTime,
+                  messageDay,
+                  messageDate,
+                  dateNow,
+                  messageContent: `message${userIndex}`,
+                  unreed: false,
+                  messageByUser: true,
+                });
+                const newFriendMessage = {
+                  ...newMessage,
+                  unreed: true,
+                  messageByUser: false,
+                };
+                tempUserMessages.unshift(newMessage);
+                tempFriendMessages.unshift(newFriendMessage);
+                const bulkUpdate = [
+                  {
+                    updateOne: {
+                      filter: { _id: user0Id },
+                      update: {
+                        $addToSet: {
                           friends: {
                             _id: friendId,
                           },
-                          isGroup: false,
                         },
                       },
                     },
                   },
-                },
-                {
-                  updateOne: {
-                    filter: { _id: friendId },
-                    update: {
-                      $addToSet: {
-                        chats: {
-                          chatId,
+                  {
+                    updateOne: {
+                      filter: { _id: friendId },
+                      update: {
+                        $addToSet: {
                           friends: {
                             _id: user0Id,
                           },
-                          isGroup: false,
                         },
                       },
                     },
                   },
-                },
-              ];
-              // eslint-disable-next-line no-console
-              console.log(`Adding friend to user - ${userIndex}, friend - ${otherIndex}`);
-              // eslint-disable-next-line no-console
-              friendPromises.push(User.bulkWrite(bulkUpdate).catch((error) => console.log(error)));
-            }
-          });
-          userMessages.push(tempUserMessages);
-          friendMessages.push(tempFriendMessages);
+                  {
+                    updateOne: {
+                      filter: { _id: user0Id },
+                      update: {
+                        $addToSet: {
+                          chats: {
+                            chatId,
+                            friends: {
+                              _id: friendId,
+                            },
+                            isGroup: false,
+                          },
+                        },
+                      },
+                    },
+                  },
+                  {
+                    updateOne: {
+                      filter: { _id: friendId },
+                      update: {
+                        $addToSet: {
+                          chats: {
+                            chatId,
+                            friends: {
+                              _id: user0Id,
+                            },
+                            isGroup: false,
+                          },
+                        },
+                      },
+                    },
+                  },
+                ];
+                // eslint-disable-next-line no-console
+                console.log(`Adding friend to user - ${userIndex}, friend - ${otherIndex}`);
+                // eslint-disable-next-line no-console
+                friendPromises.push(
+                  User.bulkWrite(bulkUpdate).catch((error) => console.log(error))
+                );
+              }
+            });
+            userMessages.push(tempUserMessages);
+            friendMessages.push(tempFriendMessages);
+          }
         });
         await Promise.all(friendPromises).then(() => {
           User.find()

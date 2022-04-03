@@ -3,11 +3,11 @@ const NotFoundError = require('./errors/NotFoundError');
 const UnknownError = require('./errors/UnknownError');
 const { writeJsonFile, readJsonFileSync } = require('./fs');
 
-const getKey = (_id, chatId) => {
-  let key = this.getPublicKey(_id, chatId);
+const getKey = (_id, chatId, callBack) => {
+  let key = callBack(_id, chatId);
   if (key instanceof Error) {
     this.createKey(_id, chatId);
-    key = this.getPublicKey(_id, chatId);
+    key = callBack(_id, chatId);
   }
   return new NodeRSA(key);
 };
@@ -45,16 +45,16 @@ module.exports.getPrivateKey = (_id, chatId) => {
 
 module.exports.encryptMessage = (_id, friendId, chatId, message) => {
   const { messageDate, dateNow, messageDay, messageTime } = message;
-  const userKey = getKey(_id, chatId);
-  const friendKey = getKey(friendId, chatId);
+  const userKey = getKey(_id, chatId, this.getPublicKey);
+  const friendKey = getKey(friendId, chatId, this.getPublicKey);
   const firstEncryptedMessage = friendKey.encrypt(message, 'base64');
   const encryptedMessage = userKey.encrypt(firstEncryptedMessage, 'base64');
   return { encryptedMessage, messageDate, dateNow, messageDay, messageTime };
 };
 
 module.exports.decryptMessage = (_id, friendId, chatId, message) => {
-  const userKey = getKey(_id, chatId);
-  const friendKey = getKey(friendId, chatId);
+  const userKey = getKey(_id, chatId, this.getPrivateKey);
+  const friendKey = getKey(friendId, chatId, this.getPrivateKey);
   const firstDecryptedMessage = userKey.decrypt(message.encryptedMessage, 'utf8');
   const decryptedMessage = JSON.parse(friendKey.decrypt(firstDecryptedMessage, 'utf8'));
   return decryptedMessage;
